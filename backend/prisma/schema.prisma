@@ -1,0 +1,113 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum MistriStatus {
+  PENDING
+  APPROVED
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+}
+
+model Mistri {
+  id Int @id @default(autoincrement())
+
+  // Location and work category
+  state    String @db.VarChar(100)
+  city     String @db.VarChar(100)
+  category String @db.VarChar(120)
+
+  // Personal details
+  fullName        String  @map("full_name") @db.VarChar(120)
+  primaryPhone    String  @unique @map("primary_phone") @db.VarChar(15)
+  alternatePhone  String? @map("alternate_phone") @db.VarChar(15)
+  qualification   String  @db.VarChar(255)
+  address         String  @db.Text
+  pincode         String? @db.Char(6)
+  experienceYears Int     @default(0) @map("experience_years")
+
+  // Work information
+  servicesOffered Json    @map("services_offered")
+  shortIntro      String? @map("short_intro") @db.Text
+
+  // Cloudinary images
+  profilePhotoUrl      String  @map("profile_photo_url") @db.VarChar(500)
+  profilePhotoPublicId String? @map("profile_photo_public_id") @db.VarChar(255)
+  galleryImages        Json?   @map("gallery_images")
+
+  // Optional information
+  referralCode String? @map("referral_code") @db.VarChar(50)
+
+  // Admin review state
+  status     MistriStatus @default(PENDING)
+  approvedAt DateTime?    @map("approved_at")
+
+  // Terms acceptance
+  termsAcceptedAt DateTime @default(now()) @map("terms_accepted_at")
+  termsVersion    String   @default("v1.0") @map("terms_version") @db.VarChar(20)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([status, createdAt])
+  @@index([state, city, category])
+  @@index([createdAt])
+  @@map("mistris")
+}
+
+model Admin {
+  id           Int             @id @default(autoincrement())
+  name         String          @db.VarChar(120)
+  email        String          @unique @db.VarChar(191)
+  phone        String?         @db.VarChar(15)
+  passwordHash String          @map("password_hash") @db.VarChar(255)
+  role         AdminRole       @default(SUPER_ADMIN)
+  isActive     Boolean         @default(true) @map("is_active")
+  sessions     AdminSession[]
+  auditLogs    AdminAuditLog[]
+  createdAt    DateTime        @default(now()) @map("created_at")
+  updatedAt    DateTime        @updatedAt @map("updated_at")
+
+  @@map("admins")
+}
+
+model AdminSession {
+  id         String   @id @default(uuid()) @db.VarChar(36)
+  tokenHash  String   @unique @map("token_hash") @db.Char(64)
+  adminId    Int      @map("admin_id")
+  admin      Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  expiresAt  DateTime @map("expires_at")
+  lastUsedAt DateTime @default(now()) @map("last_used_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([adminId])
+  @@index([expiresAt])
+  @@map("admin_sessions")
+}
+
+model AdminAuditLog {
+  id         Int      @id @default(autoincrement())
+  adminId    Int?     @map("admin_id")
+  admin      Admin?   @relation(fields: [adminId], references: [id], onDelete: SetNull)
+  action     String   @db.VarChar(100)
+  entityType String?  @map("entity_type") @db.VarChar(100)
+  entityId   String?  @map("entity_id") @db.VarChar(100)
+  details    Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([adminId, createdAt])
+  @@index([entityType, entityId])
+  @@map("admin_audit_logs")
+}

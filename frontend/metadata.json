@@ -1,0 +1,6 @@
+{
+  "name": "MistriKhoj",
+  "description": "Premium verified local technician and craftsman search platform across 8 Indian states, with instant connects and mistri registration.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,6 @@
+{
+  "name": "MistriKhoj Admin Dashboard",
+  "description": "Production-ready admin dashboard frontend for MistriKhoj platform to review, manage, approve, and edit Mistri registrations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
