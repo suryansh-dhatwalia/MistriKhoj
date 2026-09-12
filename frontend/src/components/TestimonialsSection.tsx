@@ -1,10 +1,11 @@
 import React from 'react';
 import { Star, MapPin, CheckCircle2 } from 'lucide-react';
-import { TESTIMONIALS } from '../data/testimonials';
+import { useContent } from '../context/ContentContext';
 import { useLanguage } from '../context/LanguageContext';
 
 export const TestimonialsSection: React.FC = () => {
   const { t } = useLanguage();
+  const { testimonials: TESTIMONIALS } = useContent();
 
   return (
     <section id="testimonials-section" className="py-16 sm:py-24 bg-white border-b border-gray-200">

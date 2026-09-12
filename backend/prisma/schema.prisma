@@ -4,8 +4,10 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider            = "prisma-client"
+  output              = "../generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
 }
 
 datasource db {
@@ -19,6 +21,17 @@ enum MistriStatus {
 
 enum AdminRole {
   SUPER_ADMIN
+}
+
+enum ContentStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum AdPlacement {
+  HOME_BANNER
+  CATEGORY
+  VIDEO
 }
 
 model Mistri {
@@ -110,4 +123,207 @@ model AdminAuditLog {
   @@index([adminId, createdAt])
   @@index([entityType, entityId])
   @@map("admin_audit_logs")
+}
+
+// ---------------------------------------------------------------------------
+// Content management (CMS) — admin-managed data the public site renders.
+// Every row carries `status` (public API returns only ACTIVE) and `sortOrder`.
+// ---------------------------------------------------------------------------
+
+model State {
+  id                     Int           @id @default(autoincrement())
+  name                   String        @unique @db.VarChar(100)
+  code                   String        @db.VarChar(8)
+  regionalTitle          String?       @map("regional_title") @db.VarChar(160)
+  tagline                String?       @db.VarChar(200)
+  activeTechniciansCount  Int           @default(0) @map("active_technicians_count")
+  sortOrder              Int           @default(0) @map("sort_order")
+  status                 ContentStatus @default(ACTIVE)
+  cities                 City[]
+  createdAt              DateTime      @default(now()) @map("created_at")
+  updatedAt              DateTime      @updatedAt @map("updated_at")
+
+  @@index([status, sortOrder])
+  @@map("states")
+}
+
+model City {
+  id        Int           @id @default(autoincrement())
+  stateId   Int           @map("state_id")
+  state     State         @relation(fields: [stateId], references: [id], onDelete: Cascade)
+  name      String        @db.VarChar(120)
+  sortOrder Int           @default(0) @map("sort_order")
+  status    ContentStatus @default(ACTIVE)
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  @@unique([stateId, name])
+  @@index([status])
+  @@map("cities")
+}
+
+model Category {
+  id              Int           @id @default(autoincrement())
+  slug            String        @unique @db.VarChar(80)
+  name            String        @db.VarChar(140)
+  hindiName       String?       @map("hindi_name") @db.VarChar(200)
+  iconName        String?       @map("icon_name") @db.VarChar(60)
+  description     String?       @db.Text
+  avgResponseTime String?       @map("avg_response_time") @db.VarChar(60)
+  popularServices Json?         @map("popular_services")
+  sortOrder       Int           @default(0) @map("sort_order")
+  status          ContentStatus @default(ACTIVE)
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@index([status, sortOrder])
+  @@map("categories")
+}
+
+model Advertisement {
+  id            Int           @id @default(autoincrement())
+  placement     AdPlacement
+  companyName   String?       @map("company_name") @db.VarChar(160)
+  title         String?       @db.VarChar(200)
+  description   String?       @db.Text
+  ctaText       String?       @map("cta_text") @db.VarChar(60)
+  linkUrl       String?       @map("link_url") @db.VarChar(500)
+  imageUrl      String?       @map("image_url") @db.VarChar(500)
+  imagePublicId String?       @map("image_public_id") @db.VarChar(255)
+  videoUrl      String?       @map("video_url") @db.VarChar(500)
+  state         String?       @db.VarChar(100)
+  city          String?       @db.VarChar(120)
+  category      String?       @db.VarChar(140)
+  sortOrder     Int           @default(0) @map("sort_order")
+  status        ContentStatus @default(ACTIVE)
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  @@index([placement, status, sortOrder])
+  @@map("advertisements")
+}
+
+model Testimonial {
+  id              Int           @id @default(autoincrement())
+  author          String        @db.VarChar(120)
+  location        String        @db.VarChar(120)
+  state           String        @db.VarChar(100)
+  rating          Int           @default(5)
+  serviceCategory String        @map("service_category") @db.VarChar(120)
+  technicianName  String        @map("technician_name") @db.VarChar(120)
+  comment         String        @db.Text
+  displayDate     String        @map("display_date") @db.VarChar(60)
+  avatarUrl       String?       @map("avatar_url") @db.VarChar(500)
+  avatarPublicId  String?       @map("avatar_public_id") @db.VarChar(255)
+  sortOrder       Int           @default(0) @map("sort_order")
+  status          ContentStatus @default(ACTIVE)
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@index([status, sortOrder])
+  @@map("testimonials")
+}
+
+model SubscriptionPlan {
+  id          Int           @id @default(autoincrement())
+  slug        String        @unique @db.VarChar(80)
+  name        String        @db.VarChar(140)
+  price       String        @db.VarChar(60)
+  duration    String        @db.VarChar(120)
+  badge       String        @db.VarChar(80)
+  features    Json
+  idealFor    String        @map("ideal_for") @db.VarChar(255)
+  highlighted Boolean       @default(false)
+  popular     Boolean       @default(false)
+  sortOrder   Int           @default(0) @map("sort_order")
+  status      ContentStatus @default(ACTIVE)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  @@map("subscription_plans")
+}
+
+model Referral {
+  id        Int           @id @default(autoincrement())
+  code      String        @unique @db.VarChar(50)
+  name      String        @db.VarChar(120)
+  phone     String        @db.VarChar(20)
+  status    ContentStatus @default(ACTIVE)
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@map("referrals")
+}
+
+model SiteSetting {
+  key          String   @id @map("setting_key") @db.VarChar(80)
+  value        Json
+  label        String   @db.VarChar(160)
+  settingGroup String   @default("general") @map("setting_group") @db.VarChar(60)
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("site_settings")
+}
+
+enum AdRequestStatus {
+  NEW
+  CONTACTED
+  APPROVED
+  REJECTED
+}
+
+// Advertise-with-us enquiries submitted from the public site, reviewed in the admin dashboard.
+model AdRequest {
+  id               Int             @id @default(autoincrement())
+  companyName      String          @map("company_name") @db.VarChar(160)
+  contactNumber    String          @map("contact_number") @db.VarChar(20)
+  email            String          @db.VarChar(191)
+  adType           String          @map("ad_type") @db.VarChar(20)
+  duration         String          @db.VarChar(40)
+  targetUrl        String?         @map("target_url") @db.VarChar(500)
+  creativeUrl      String?         @map("creative_url") @db.VarChar(500)
+  creativePublicId String?         @map("creative_public_id") @db.VarChar(255)
+  message          String?         @db.Text
+  status           AdRequestStatus @default(NEW)
+  // Set when an admin approves the request and it is published as a live Advertisement.
+  advertisementId  Int?            @map("advertisement_id")
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
+
+  @@index([status, createdAt])
+  @@map("ad_requests")
+}
+
+enum MistriPlan {
+  FREE
+  PAID
+}
+
+// Per-Mistri subscription. One row per registration (created alongside the Mistri).
+// A PAID row pins that Mistri to the top of the public directory for its
+// state + city + category. The slot is claimed and `startsAt` / `expiresAt` are
+// set only when an admin approves the Mistri; the window lasts one year.
+// Only one PAID row per (state, city, category) may be active at a time — this is
+// enforced in the approve controller inside a transaction (MySQL has no partial
+// unique index that would let FREE / expired rows off the hook).
+model MistriSubscription {
+  id       Int        @id @default(autoincrement())
+  mistriId Int        @unique @map("mistri_id")
+  plan     MistriPlan @default(FREE)
+
+  // Denormalised slot key, mirrors the Mistri's location + trade at approval time.
+  state    String @db.VarChar(100)
+  city     String @db.VarChar(100)
+  category String @db.VarChar(120)
+
+  priceInr  Int       @default(0) @map("price_inr")
+  startsAt  DateTime? @map("starts_at")
+  expiresAt DateTime? @map("expires_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([plan, state, city, category, expiresAt])
+  @@map("mistri_subscriptions")
 }

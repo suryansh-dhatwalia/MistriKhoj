@@ -12,17 +12,24 @@ import {
   Headphones,
   Check
 } from 'lucide-react';
-import { SUPPORTED_STATES } from '../data/locations';
 import { useLanguage } from '../context/LanguageContext';
+import { useContent } from '../context/ContentContext';
 
 export const ContactSection: React.FC = () => {
   const { t } = useLanguage();
+  const { states: SUPPORTED_STATES } = useContent();
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [state, setState] = useState('Assam');
   const [message, setMessage] = useState('');
   const [activeFaqIndex, setActiveFaqIndex] = useState<number | null>(0);
+
+  const stateNames = SUPPORTED_STATES.map((s) => s.name);
+  const stateList =
+    stateNames.length > 1
+      ? `${stateNames.slice(0, -1).join(', ')}, and ${stateNames[stateNames.length - 1]}`
+      : stateNames.join('');
 
   const faqs = [
     {
@@ -35,7 +42,11 @@ export const ContactSection: React.FC = () => {
     },
     {
       q: t('faq_3_q', 'Which states and cities are currently covered?'),
-      a: t('faq_3_a', 'We currently cover 8 states: Arunachal Pradesh, Assam, Maharashtra, Meghalaya, Nagaland, Rajasthan, Uttar Pradesh, and West Bengal, including over 50 major cities and regional towns.')
+      a: t(
+        'faq_3_a',
+        'We currently cover {count} states: {states}, including over 50 major cities and regional towns.',
+        { count: SUPPORTED_STATES.length, states: stateList }
+      )
     },
     {
       q: t('faq_4_q', 'How can a technician or contractor register on MistriKhoj?'),

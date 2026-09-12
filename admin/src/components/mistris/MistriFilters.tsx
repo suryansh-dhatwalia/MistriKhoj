@@ -25,8 +25,8 @@ interface MistriFiltersProps {
   onCityChange: (value: string) => void;
   categoryFilter: string;
   onCategoryChange: (value: string) => void;
-  sortBy: string;
-  onSortByChange: (value: MistriQueryParams['sortBy']) => void;
+  sortBy: NonNullable<MistriQueryParams['sortBy']>;
+  onSortByChange: (value: NonNullable<MistriQueryParams['sortBy']>) => void;
   sortOrder: 'asc' | 'desc';
   onSortOrderChange: (value: 'asc' | 'desc') => void;
   onReset: () => void;

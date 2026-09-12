@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { clientEnv } from '../config/env';
 
 type UnauthorizedHandler = () => void;
 let onUnauthorizedCallback: UnauthorizedHandler | null = null;
@@ -12,11 +13,12 @@ export function unregisterUnauthorizedHandler() {
 }
 
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
+  baseURL: clientEnv.apiUrl,
   withCredentials: true,
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
+    'X-MistriKhoj-Admin': '1',
   },
 });
 

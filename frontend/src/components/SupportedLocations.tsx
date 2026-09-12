@@ -4,9 +4,9 @@ import {
   ChevronRight, 
   ArrowRight
 } from 'lucide-react';
-import { SUPPORTED_STATES } from '../data/locations';
 import { SupportedState } from '../types';
 import { useLanguage } from '../context/LanguageContext';
+import { useContent } from '../context/ContentContext';
 
 interface SupportedLocationsProps {
   onSelectLocation: (state: SupportedState, city?: string) => void;
@@ -14,6 +14,7 @@ interface SupportedLocationsProps {
 
 export const SupportedLocations: React.FC<SupportedLocationsProps> = ({ onSelectLocation }) => {
   const { t } = useLanguage();
+  const { states: SUPPORTED_STATES } = useContent();
   const [activeStateTab, setActiveStateTab] = useState<SupportedState>(SUPPORTED_STATES[0].name);
 
   const currentStateData = SUPPORTED_STATES.find(s => s.name === activeStateTab) || SUPPORTED_STATES[0];
@@ -31,7 +32,7 @@ export const SupportedLocations: React.FC<SupportedLocationsProps> = ({ onSelect
             <span className="w-2.5 h-2.5 rounded-full bg-[#FFB800]"></span>
           </div>
           <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-black text-[#111827] tracking-tight">
-            {t('loc_title', 'Supported 8 Indian States & 50+ Cities')}
+            {t('loc_title', 'Supported {count} Indian States & 50+ Cities', { count: SUPPORTED_STATES.length })}
           </h2>
           <p className="text-xs sm:text-sm md:text-base text-gray-600 mt-2.5 max-w-lg mx-auto leading-relaxed font-medium">
             {t('loc_subtitle', 'Select any state to explore active city hubs and discover local verified craftsmen in your area.')}

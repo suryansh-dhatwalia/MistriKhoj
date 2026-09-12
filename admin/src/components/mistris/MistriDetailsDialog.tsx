@@ -27,6 +27,7 @@ import VerifiedIcon from '@mui/icons-material/Verified';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
 import { Mistri } from '../../types/mistri.types';
 import { SafeImage } from '../common/SafeImage';
+import { PlanChip } from './PlanChip';
 import { formatDate, formatExperience, formatPhoneNumber } from '../../utils/format.utils';
 import { brandColors } from '../../theme/theme';
 
@@ -298,6 +299,86 @@ export const MistriDetailsDialog: React.FC<MistriDetailsDialogProps> = ({
                     </Box>
                   )}
                 </Box>
+              </Box>
+            </Grid>
+
+            {/* Subscription / Plan */}
+            <Grid size={{ xs: 12 }}>
+              <Box
+                sx={{
+                  p: 2.5,
+                  borderRadius: 2,
+                  border: `1px solid ${mistri.slotActive ? brandColors.mustard : brandColors.border}`,
+                  backgroundColor: mistri.slotActive ? brandColors.mustardLight : brandColors.white,
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5, flexWrap: 'wrap' }}>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      color: brandColors.textSecondary,
+                    }}
+                  >
+                    Listing Plan
+                  </Typography>
+                  <PlanChip mistri={mistri} />
+                </Box>
+
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(4, 1fr)' },
+                    gap: 2,
+                  }}
+                >
+                  <Box>
+                    <Typography variant="caption" sx={{ color: brandColors.textSecondary, display: 'block' }}>
+                      Price
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                      ₹{mistri.priceInr ?? (mistri.plan === 'PAID' ? 500 : 0)}
+                      {mistri.plan === 'PAID' ? ' / year' : ''}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" sx={{ color: brandColors.textSecondary, display: 'block' }}>
+                      Top slot
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ fontWeight: 700, color: mistri.slotActive ? brandColors.success : brandColors.textSecondary }}
+                    >
+                      {mistri.slotActive ? 'Active' : mistri.plan === 'PAID' ? 'Not active' : '—'}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" sx={{ color: brandColors.textSecondary, display: 'block' }}>
+                      Slot started
+                    </Typography>
+                    <Typography variant="body2">
+                      {mistri.subscriptionStartsAt ? formatDate(mistri.subscriptionStartsAt) : '—'}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" sx={{ color: brandColors.textSecondary, display: 'block' }}>
+                      Slot expires
+                    </Typography>
+                    <Typography variant="body2">
+                      {mistri.featuredUntil ? formatDate(mistri.featuredUntil) : '—'}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {mistri.plan === 'PAID' && !mistri.slotActive && (
+                  <Typography variant="caption" sx={{ color: brandColors.textSecondary, display: 'block', mt: 1.5 }}>
+                    {mistri.status === 'PENDING'
+                      ? 'The paid top slot is claimed when this registration is approved.'
+                      : 'The paid slot is not currently held (it may have expired or been released).'}
+                  </Typography>
+                )}
               </Box>
             </Grid>
 

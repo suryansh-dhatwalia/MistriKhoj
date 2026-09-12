@@ -14,8 +14,8 @@ import {
   Sparkle,
   Truck
 } from 'lucide-react';
-import { SERVICE_CATEGORIES } from '../data/categories';
 import { useLanguage } from '../context/LanguageContext';
+import { useContent } from '../context/ContentContext';
 
 interface PopularCategoriesProps {
   onSelectCategory: (categoryName: string) => void;
@@ -23,6 +23,7 @@ interface PopularCategoriesProps {
 
 export const PopularCategories: React.FC<PopularCategoriesProps> = ({ onSelectCategory }) => {
   const { t } = useLanguage();
+  const { categories: SERVICE_CATEGORIES } = useContent();
 
   const getCategoryIcon = (iconName: string) => {
     switch (iconName) {

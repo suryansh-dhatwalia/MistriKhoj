@@ -23,10 +23,9 @@ import {
   CheckCircle2,
   Users
 } from 'lucide-react';
-import { SUPPORTED_STATES, getCitiesForState } from '../data/locations';
-import { SERVICE_CATEGORIES } from '../data/categories';
 import { SupportedState } from '../types';
 import { useLanguage } from '../context/LanguageContext';
+import { useContent } from '../context/ContentContext';
 
 interface HeroSectionProps {
   selectedState: SupportedState | 'All';
@@ -56,6 +55,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   totalRegisteredCount
 }) => {
   const { t, language } = useLanguage();
+  const { states: SUPPORTED_STATES, getCitiesForState } = useContent();
+  const stateCount = SUPPORTED_STATES.length;
   const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
 
@@ -113,7 +114,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
             {/* Subtitle Description */}
             <p className="text-base sm:text-lg text-gray-700 max-w-xl font-normal leading-relaxed">
-              {t('hero_subheadline', 'Find 15,000+ Aadhaar & police background checked local master craftsmen across 8 Indian states. Direct phone & WhatsApp calling.')}
+              {t('hero_subheadline', 'Find 15,000+ Aadhaar & police background checked local master craftsmen across {count} Indian states. Direct phone & WhatsApp calling.', { count: stateCount })}
             </p>
 
             {/* Unified Search Bar Box */}
@@ -134,7 +135,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     <div className="flex items-center gap-1.5 truncate min-w-0">
                       <MapPin className="w-4 h-4 text-black fill-black shrink-0" />
                       <span className="truncate">
-                        {selectedCity !== 'All' ? selectedCity : selectedState === 'All' ? t('hero_all_states', 'All 8 States') : selectedState}
+                        {selectedCity !== 'All' ? selectedCity : selectedState === 'All' ? t('hero_all_states', 'All {count} States', { count: stateCount }) : selectedState}
                       </span>
                     </div>
                     <ChevronDown className="w-3.5 h-3.5 text-gray-500 shrink-0 ml-1" />
@@ -152,7 +153,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                           selectedState === 'All' ? 'bg-[#FFB800]/20 text-black font-bold' : 'text-gray-700 hover:bg-gray-50'
                         }`}
                       >
-                        <span>{t('hero_all_states', 'All 8 States')}</span>
+                        <span>{t('hero_all_states', 'All {count} States', { count: stateCount })}</span>
                         {selectedState === 'All' && <Check className="w-3.5 h-3.5 text-black" />}
                       </button>
 
@@ -271,7 +272,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     50+ Cities
                   </div>
                   <div className="text-[9px] sm:text-[10px] font-bold text-gray-500 uppercase tracking-wider">
-                    {t('about_stat_states', '8 States')}
+                    {t('about_stat_states', '{count} States', { count: stateCount })}
                   </div>
                 </div>
                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-800 shrink-0">
@@ -383,7 +384,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     {t('hero_trusted_craftsmen', 'TRUSTED CRAFTSMEN')}
                   </div>
                   <div className="text-[9px] sm:text-[10px] text-gray-600 font-semibold">
-                    {t('hero_across_states', 'Across 8 States & 50+ Cities')}
+                    {t('hero_across_states', 'Across {count} States & 50+ Cities', { count: stateCount })}
                   </div>
 
                   <div className="flex items-center -space-x-2 pt-1">

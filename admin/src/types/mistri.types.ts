@@ -1,5 +1,7 @@
 export type MistriStatus = 'PENDING' | 'APPROVED';
 
+export type MistriPlan = 'FREE' | 'PAID';
+
 export interface Mistri {
   id: number;
   state: string;
@@ -21,6 +23,16 @@ export interface Mistri {
   createdAt: string;
   updatedAt: string;
   approvedAt: string | null;
+  /** Subscription plan. Defaults to FREE. */
+  plan?: MistriPlan;
+  /** Snapshot price paid for the plan, in rupees (0 for FREE). */
+  priceInr?: number;
+  /** When the paid top slot started (set on approval), ISO string or null. */
+  subscriptionStartsAt?: string | null;
+  /** When the paid top slot expires, ISO string or null. */
+  featuredUntil?: string | null;
+  /** True while this Mistri currently holds the paid top slot for their area. */
+  slotActive?: boolean;
 }
 
 export interface MistriQueryParams {
@@ -31,6 +43,7 @@ export interface MistriQueryParams {
   state?: string;
   city?: string;
   category?: string;
+  plan?: MistriPlan;
   sortBy?: 'createdAt' | 'experienceYears' | 'fullName' | 'id';
   sortOrder?: 'asc' | 'desc';
 }
@@ -48,6 +61,7 @@ export interface UpdateMistriInput {
   experienceYears: number;
   servicesOffered: string[];
   shortIntro?: string | null;
+  plan?: MistriPlan;
 }
 
 export interface RejectMistriInput {

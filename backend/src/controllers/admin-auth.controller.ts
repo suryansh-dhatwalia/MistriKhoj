@@ -12,6 +12,11 @@ import { prisma } from "../lib/prisma.js";
 import type { SafeAdmin } from "../middleware/admin-auth.js";
 import { adminLoginSchema } from "../schemas/admin.schema.js";
 
+// Used when the email does not exist so login attempts take approximately the
+// same amount of time and do not reveal which administrator emails are valid.
+const DUMMY_PASSWORD_HASH =
+  "$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy";
+
 export async function loginAdmin(
   request: Request,
   response: Response,
@@ -29,9 +34,10 @@ export async function loginAdmin(
 
   try {
     const admin = await prisma.admin.findUnique({ where: { email: validation.data.email } });
-    const passwordMatches = admin
-      ? await bcrypt.compare(validation.data.password, admin.passwordHash)
-      : false;
+    const passwordMatches = await bcrypt.compare(
+      validation.data.password,
+      admin?.passwordHash ?? DUMMY_PASSWORD_HASH,
+    );
 
     if (!admin || !admin.isActive || !passwordMatches) {
       response.status(401).json({ success: false, message: "Invalid email or password." });

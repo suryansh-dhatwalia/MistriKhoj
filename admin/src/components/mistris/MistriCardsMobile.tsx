@@ -17,6 +17,7 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import PhoneIcon from '@mui/icons-material/Phone';
 import { Mistri } from '../../types/mistri.types';
 import { SafeImage } from '../common/SafeImage';
+import { PlanChip } from './PlanChip';
 import { formatDateOnly, formatExperience, formatPhoneNumber } from '../../utils/format.utils';
 import { brandColors } from '../../theme/theme';
 
@@ -95,18 +96,20 @@ export const MistriCardsMobile: React.FC<MistriCardsMobileProps> = ({
                 </Typography>
               </Box>
 
-              <Chip
-                label={mistri.category}
-                size="small"
-                sx={{
-                  mt: 0.5,
-                  height: 22,
-                  fontSize: '0.6875rem',
-                  fontWeight: 600,
-                  backgroundColor: brandColors.warmWhiteDarker,
-                  color: brandColors.textPrimary,
-                }}
-              />
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mt: 0.5 }}>
+                <Chip
+                  label={mistri.category}
+                  size="small"
+                  sx={{
+                    height: 22,
+                    fontSize: '0.6875rem',
+                    fontWeight: 600,
+                    backgroundColor: brandColors.warmWhiteDarker,
+                    color: brandColors.textPrimary,
+                  }}
+                />
+                <PlanChip mistri={mistri} />
+              </Box>
             </Box>
           </Box>
 

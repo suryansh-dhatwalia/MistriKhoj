@@ -387,6 +387,16 @@ export const PendingMistrisPage: React.FC = () => {
               <Typography variant="caption" sx={{ color: brandColors.textSecondary, display: 'block' }}>
                 Upon approval, this profile will immediately be visible on the public MistriKhoj website.
               </Typography>
+              {selectedMistri.plan === 'PAID' && (
+                <Typography
+                  variant="caption"
+                  sx={{ color: brandColors.mustardDark, fontWeight: 700, display: 'block', mt: 1 }}
+                >
+                  This applicant chose the Paid plan — approving locks the 1-year top slot for{' '}
+                  {selectedMistri.city} / {selectedMistri.category}. If that slot is already held,
+                  approval is blocked and you can switch them to Free first.
+                </Typography>
+              )}
             </Box>
           ) : (
             ''

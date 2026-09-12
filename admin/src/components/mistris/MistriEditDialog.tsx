@@ -13,11 +13,12 @@ import {
   IconButton,
   CircularProgress,
   Alert,
+  MenuItem,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
 import SaveIcon from '@mui/icons-material/Save';
-import { Mistri, UpdateMistriInput } from '../../types/mistri.types';
+import { Mistri, MistriPlan, UpdateMistriInput } from '../../types/mistri.types';
 import { mistrisApi } from '../../api/mistris.api';
 import { parseApiError } from '../../utils/error.utils';
 import { brandColors } from '../../theme/theme';
@@ -48,6 +49,7 @@ export const MistriEditDialog: React.FC<MistriEditDialogProps> = ({
     experienceYears: 0,
     servicesOffered: [],
     shortIntro: '',
+    plan: 'FREE',
   });
 
   const [serviceInput, setServiceInput] = useState<string>('');
@@ -70,6 +72,7 @@ export const MistriEditDialog: React.FC<MistriEditDialogProps> = ({
         experienceYears: mistri.experienceYears ?? 0,
         servicesOffered: Array.isArray(mistri.servicesOffered) ? [...mistri.servicesOffered] : [],
         shortIntro: mistri.shortIntro || '',
+        plan: mistri.plan ?? 'FREE',
       });
       setErrorMessage(null);
       setFieldErrors({});
@@ -398,6 +401,21 @@ export const MistriEditDialog: React.FC<MistriEditDialogProps> = ({
                 onChange={(e) => handleInputChange('shortIntro', e.target.value)}
                 placeholder="Brief summary of skills, experience, and background..."
               />
+            </Grid>
+
+            {/* Listing Plan */}
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField
+                select
+                fullWidth
+                label="Listing Plan"
+                value={formData.plan ?? 'FREE'}
+                onChange={(e) => handleInputChange('plan', e.target.value as MistriPlan)}
+                helperText="Switching to Free releases the paid top slot for this area. Switching to Paid claims it on the next approval (or now, if already approved)."
+              >
+                <MenuItem value="FREE">Free — standard listing</MenuItem>
+                <MenuItem value="PAID">Paid — ₹500 / year, top slot</MenuItem>
+              </TextField>
             </Grid>
           </Grid>
         </DialogContent>

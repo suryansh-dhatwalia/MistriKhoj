@@ -8,8 +8,7 @@ import {
   CheckCircle2,
   Zap,
 } from 'lucide-react';
-import { SUPPORTED_STATES } from '../data/locations';
-import { SERVICE_CATEGORIES } from '../data/categories';
+import { useContent } from '../context/ContentContext';
 import { SupportedState } from '../types';
 import { useLanguage } from '../context/LanguageContext';
 import { LanguageSelector } from './LanguageSelector';
@@ -36,6 +35,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onSelectCategory,
 }) => {
   const { t } = useLanguage();
+  const { states: SUPPORTED_STATES, categories: SERVICE_CATEGORIES } = useContent();
 
   const [mobileMenuOpen, setMobileMenuOpen] =
     useState(false);
@@ -317,7 +317,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
                 <span>
                   {selectedState === 'All'
-                    ? '8 States'
+                    ? t('nav_states_count', '{count} States', { count: SUPPORTED_STATES.length })
                     : selectedState}
                 </span>
 
@@ -348,7 +348,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <span>
                       {t(
                         'nav_all_supported_regions',
-                        'All Supported Regions (8 States)',
+                        'All Supported Regions ({count} States)',
+                        { count: SUPPORTED_STATES.length },
                       )}
                     </span>
 

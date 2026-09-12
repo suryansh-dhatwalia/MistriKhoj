@@ -15,9 +15,9 @@ import {
   HardHat
 } from 'lucide-react';
 import { Technician, SupportedState } from '../types';
-import { SUPPORTED_STATES, getCitiesForState } from '../data/locations';
-import { SERVICE_CATEGORIES } from '../data/categories';
+import { DEFAULT_AVATAR_URI } from '../lib/avatar';
 import { useLanguage } from '../context/LanguageContext';
+import { useContent } from '../context/ContentContext';
 
 interface TechnicianDirectoryProps {
   technicians: Technician[];
@@ -53,6 +53,7 @@ export const TechnicianDirectory: React.FC<TechnicianDirectoryProps> = ({
   onDirectContact
 }) => {
   const { t } = useLanguage();
+  const { states: SUPPORTED_STATES, categories: SERVICE_CATEGORIES, getCitiesForState } = useContent();
   const [minExperience, setMinExperience] = useState<number>(0);
   const [onlyEmergency, setOnlyEmergency] = useState<boolean>(false);
   const [onlyGoldPartner, setOnlyGoldPartner] = useState<boolean>(false);
@@ -92,6 +93,9 @@ export const TechnicianDirectory: React.FC<TechnicianDirectoryProps> = ({
         return true;
       })
       .sort((a, b) => {
+        // Paid "Top Listed" Mistris are always pinned above the rest of the
+        // current result set; the chosen Sort By only orders within each group.
+        if (a.isFeatured !== b.isFeatured) return a.isFeatured ? -1 : 1;
         if (sortBy === 'rating') return b.rating - a.rating;
         if (sortBy === 'experience') return b.experienceYears - a.experienceYears;
         if (sortBy === 'jobs') return b.completedJobs - a.completedJobs;
@@ -134,11 +138,18 @@ export const TechnicianDirectory: React.FC<TechnicianDirectoryProps> = ({
 
           {/* Quick Counter */}
           <div className="flex items-center gap-3">
-            <div className="px-4 py-2 rounded-xl bg-white border border-gray-200 text-xs shadow-sm flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span className="text-gray-600">Showing: </span>
-              <span className="font-extrabold text-black text-sm">{filteredTechnicians.length}</span>
-              <span className="text-gray-600"> Registered Mistris</span>
+            <div className="flex flex-col gap-1">
+              <div className="px-4 py-2 rounded-xl bg-white border border-gray-200 text-xs shadow-sm flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span className="text-gray-600">Showing: </span>
+                <span className="font-extrabold text-black text-sm">{filteredTechnicians.length}</span>
+                <span className="text-gray-600"> Registered Mistris</span>
+              </div>
+              {filteredTechnicians.some((tech) => tech.isFeatured) && (
+                <p className="text-[10px] text-gray-500 font-semibold pl-1">
+                  {t('dir_top_listed_note', '★ Top Listed profiles are on a paid yearly plan.')}
+                </p>
+              )}
             </div>
             {(selectedState !== 'All' || selectedCategory !== 'All' || searchQuery || minExperience > 0 || onlyEmergency) && (
               <button
@@ -171,7 +182,7 @@ export const TechnicianDirectory: React.FC<TechnicianDirectoryProps> = ({
                 }}
                 className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:border-black focus:outline-none"
               >
-                <option value="All">{t('hero_all_states', 'All 8 States')}</option>
+                <option value="All">{t('hero_all_states', 'All {count} States', { count: SUPPORTED_STATES.length })}</option>
                 {SUPPORTED_STATES.map((st) => (
                   <option key={st.name} value={st.name}>
                     {st.name}
@@ -331,7 +342,11 @@ export const TechnicianDirectory: React.FC<TechnicianDirectoryProps> = ({
             {filteredTechnicians.map((tech) => (
               <div
                 key={tech.id}
-                className="group rounded-2xl bg-white border-2 border-gray-200 hover:border-black transition-all duration-200 shadow-sm hover:shadow-xl flex flex-col justify-between overflow-hidden"
+                className={`group rounded-2xl bg-white border-2 transition-all duration-200 shadow-sm hover:shadow-xl flex flex-col justify-between overflow-hidden ${
+                  tech.isFeatured
+                    ? 'border-[#FFB800] ring-2 ring-[#FFB800]/40 hover:border-[#FFB800]'
+                    : 'border-gray-200 hover:border-black'
+                }`}
               >
                 {/* Card Top / Header */}
                 <div className="p-6">
@@ -342,7 +357,10 @@ export const TechnicianDirectory: React.FC<TechnicianDirectoryProps> = ({
                       <img
                         src={tech.photoUrl}
                         alt={tech.name}
-                        className="w-16 h-16 rounded-xl object-cover border border-gray-200"
+                        onError={(e) => {
+                          e.currentTarget.src = DEFAULT_AVATAR_URI;
+                        }}
+                        className="w-16 h-16 rounded-xl object-cover border border-gray-200 bg-gray-100"
                       />
                       {tech.isVerified && (
                         <div className="absolute -bottom-1 -right-1 bg-black text-[#FFB800] rounded-full p-0.5 shadow-sm" title="Police & Skill Verified">
@@ -354,9 +372,15 @@ export const TechnicianDirectory: React.FC<TechnicianDirectoryProps> = ({
                     {/* Basic info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap">
+                        {tech.isFeatured && (
+                          <span className="text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider bg-[#FFB800] text-black flex items-center gap-0.5">
+                            <Star className="w-2.5 h-2.5 fill-black" />
+                            {t('dir_top_listed', 'Top Listed')}
+                          </span>
+                        )}
                         <span className={`text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider ${
-                          tech.badgeLevel === 'Gold Master' 
-                            ? 'bg-[#FFB800] text-black' 
+                          tech.badgeLevel === 'Gold Master'
+                            ? 'bg-[#FFB800] text-black'
                             : tech.badgeLevel === 'Platinum Partner'
                             ? 'bg-black text-[#FFB800]'
                             : 'bg-gray-100 text-gray-800'

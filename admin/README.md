@@ -1,20 +1,7 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# MistriKhoj admin dashboard
 
-# Run and deploy your AI Studio app
+The protected React administration application runs locally on port 5174.
 
-This contains everything you need to run your app locally.
+Copy .env.example to .env, set VITE_API_URL and VITE_PUBLIC_WEBSITE_URL, install dependencies with npm ci, and run npm run dev.
 
-View your app in AI Studio: https://ai.studio/apps/f6c630d5-35aa-4439-88de-5c37eae289cc
-
-## Run Locally
-
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+For production, run npm run build and publish the dist directory on a static website host. Configure unknown routes to fall back to index.html. The backend ADMIN_URL must exactly match the deployed admin origin.

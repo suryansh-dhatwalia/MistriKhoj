@@ -18,6 +18,7 @@ import { TechnicianModal } from './components/TechnicianModal';
 import { EmergencySOSModal } from './components/EmergencySOSModal';
 import { FloatingActions } from './components/FloatingActions';
 import { api } from './lib/api';
+import { avatarOrDefault } from './lib/avatar';
 import type {
   MistriListApiResponse,
   MistriListItem,
@@ -41,7 +42,7 @@ const toTechnician = (mistri: MistriListItem): Technician => ({
   intro:
     mistri.shortIntro ||
     `${mistri.category} providing services in ${mistri.city}, ${mistri.state}.`,
-  photoUrl: mistri.profilePhotoUrl,
+  photoUrl: avatarOrDefault(mistri.profilePhotoUrl),
   galleryImages: mistri.galleryImages,
   rating: 0,
   reviewsCount: 0,
@@ -52,7 +53,10 @@ const toTechnician = (mistri: MistriListItem): Technician => ({
   completedJobs: 0,
   policeVerified: false,
   skillTestCertified: false,
-  memberSince: mistri.createdAt
+  memberSince: mistri.createdAt,
+  plan: mistri.plan ?? 'FREE',
+  isFeatured: Boolean(mistri.isFeatured),
+  featuredUntil: mistri.featuredUntil ?? null
 });
 
 export function MainApp() {
@@ -200,7 +204,7 @@ export function MainApp() {
             {/* 6. About MistriKhoj Story & Mission */}
             <AboutSection />
 
-            {/* 7. Supported 8 Indian States & Cities */}
+            {/* 7. Supported Indian States & Cities */}
             <SupportedLocations
               onSelectLocation={(state, city) => {
                 setSelectedState(state);

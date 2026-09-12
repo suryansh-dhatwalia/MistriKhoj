@@ -5,8 +5,8 @@ import {
   Zap, 
   CheckCircle2
 } from 'lucide-react';
-import { SUPPORTED_STATES } from '../data/locations';
 import { useLanguage } from '../context/LanguageContext';
+import { useContent } from '../context/ContentContext';
 
 interface EmergencySOSModalProps {
   isOpen: boolean;
@@ -20,6 +20,7 @@ export const EmergencySOSModal: React.FC<EmergencySOSModalProps> = ({
   onSelectEmergencyCategory
 }) => {
   const { t } = useLanguage();
+  const { states: SUPPORTED_STATES } = useContent();
   const [selectedEmergency, setSelectedEmergency] = useState('Short Circuit & Sparking');
   const [sosState, setSosState] = useState('Assam');
   const [sosCity, setSosCity] = useState('Guwahati');

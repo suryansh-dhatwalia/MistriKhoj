@@ -1,32 +1,43 @@
-import React, { useState } from 'react';
-import { 
-  MapPin, 
-  Phone, 
-  Award, 
-  Upload, 
-  Image as ImageIcon, 
-  X, 
-  Check, 
-  CheckCircle2, 
-  Tag, 
-  ShieldCheck, 
-  Sparkles, 
-  ArrowLeft, 
-  Printer
+import React, { useEffect, useState } from 'react';
+import {
+  MapPin,
+  Phone,
+  Award,
+  Upload,
+  Image as ImageIcon,
+  X,
+  Check,
+  CheckCircle2,
+  Tag,
+  ShieldCheck,
+  Sparkles,
+  ArrowLeft,
+  Printer,
+  Crown,
+  Loader2
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import axios from 'axios';
 import { api } from '../lib/api';
-import { SUPPORTED_STATES, getCitiesForState } from '../data/locations';
-import { SERVICE_CATEGORIES } from '../data/categories';
 import type {
   MistriRegistrationFormData,
+  PaidSlotStatusResponse,
   RegistrationApiError,
   RegistrationApiResponse,
   SupportedState,
   Technician
 } from '../types';
+import { REGISTRATION_PLANS, PAID_PLAN_PRICE_INR } from '../data/registrationPlans';
+import { DEFAULT_AVATAR_URI, avatarOrDefault } from '../lib/avatar';
 import { useLanguage } from '../context/LanguageContext';
+import { useContent } from '../context/ContentContext';
+
+const formatSlotDate = (iso: string): string => {
+  const date = new Date(iso);
+  return Number.isNaN(date.getTime())
+    ? iso
+    : date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+};
 
 const MAX_IMAGE_SIZE_BYTES = 4 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
@@ -62,6 +73,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
   onBackToHome
 }) => {
   const { t } = useLanguage();
+  const { states: SUPPORTED_STATES, categories: SERVICE_CATEGORIES, getCitiesForState } = useContent();
   const [formData, setFormData] = useState<MistriRegistrationFormData>({
     state: 'Assam',
     city: 'Guwahati',
@@ -83,7 +95,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
     profilePhoto: null,
     galleryImages: [],
     referralCode: '',
-    subscriptionPlan: 'free_starter',
+    subscriptionPlan: 'FREE',
     acceptedTerms: false
   });
 
@@ -92,8 +104,37 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [registeredMistri, setRegisteredMistri] = useState<Technician | null>(null);
+  const [paidSlot, setPaidSlot] = useState<PaidSlotStatusResponse | null>(null);
+  const [isCheckingPaidSlot, setIsCheckingPaidSlot] = useState(false);
 
   const availableCities = formData.state ? getCitiesForState(formData.state) : [];
+
+  // Advisory check: is the paid top slot for this state + city + category open?
+  // Only fetched while the Paid plan is selected. The real decision is made when
+  // an admin approves the registration.
+  useEffect(() => {
+    if (formData.subscriptionPlan !== 'PAID' || !formData.state || !formData.city || !formData.category) {
+      setPaidSlot(null);
+      return;
+    }
+
+    const controller = new AbortController();
+    setIsCheckingPaidSlot(true);
+    api
+      .get<PaidSlotStatusResponse>('/mistris/paid-slot', {
+        params: { state: formData.state, city: formData.city, category: formData.category },
+        signal: controller.signal
+      })
+      .then((response) => setPaidSlot(response.data))
+      .catch((error) => {
+        if (!axios.isCancel(error)) setPaidSlot(null);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setIsCheckingPaidSlot(false);
+      });
+
+    return () => controller.abort();
+  }, [formData.subscriptionPlan, formData.state, formData.city, formData.category]);
 
   const qualificationsList = [
     'ITI Certified (Govt / NCVT Recognized)',
@@ -242,7 +283,6 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
       newErrors.pincode = 'Enter a valid 6-digit PIN code';
     }
     if (formData.servicesOffered.length === 0) newErrors.servicesOffered = 'Select or add at least one service offered';
-    if (!formData.profilePhoto) newErrors.profilePhoto = 'Please upload a clear profile photograph';
     if (!formData.acceptedTerms) newErrors.acceptedTerms = 'You must accept the terms and safety policies';
 
     setErrors(newErrors);
@@ -284,7 +324,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
         experienceYears: formData.experienceYears,
         servicesOffered: formData.servicesOffered,
         intro: formData.shortIntro || `Certified ${formData.category} offering professional services in ${formData.city}, ${formData.state}. ${formData.experienceYears}+ years experience.`,
-        photoUrl: savedMistri.profilePhotoUrl,
+        photoUrl: avatarOrDefault(savedMistri.profilePhotoUrl),
         galleryImages: galleryUrls,
         rating: 0,
         reviewsCount: 0,
@@ -295,7 +335,10 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
         completedJobs: 0,
         policeVerified: false,
         skillTestCertified: false,
-        memberSince: savedMistri.createdAt
+        memberSince: savedMistri.createdAt,
+        plan: formData.subscriptionPlan,
+        isFeatured: false,
+        featuredUntil: null
       };
 
       setRegisteredMistri(newMistri);
@@ -323,6 +366,15 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
             ])
           );
           setErrors(backendErrors);
+        }
+
+        // A 409 on the paid slot (should not happen at register time today, but
+        // keep it wired) surfaces on the plan selector.
+        if (error.response?.status === 409 && backendResponse?.message) {
+          setErrors((previousErrors) => ({
+            ...previousErrors,
+            subscriptionPlan: backendResponse.message
+          }));
         }
 
         setSubmissionError(
@@ -362,6 +414,14 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
               <p className="text-xs sm:text-sm text-gray-600 mt-2 max-w-lg mx-auto font-medium">
                 Your application has been saved successfully. Your details will be reviewed before your profile becomes visible to homeowners in {registeredMistri.city}, {registeredMistri.state}.
               </p>
+              {registeredMistri.plan === 'PAID' && (
+                <p className="text-xs sm:text-sm text-amber-800 mt-3 max-w-lg mx-auto font-bold bg-[#FFF9EC] border border-[#FFB800]/50 rounded-xl px-4 py-2.5">
+                  {t(
+                    'reg_success_paid',
+                    `Your ₹${PAID_PLAN_PRICE_INR} / year Paid top listing is reserved. It goes live at the top of search for ${registeredMistri.city} · ${registeredMistri.category} once an admin approves your profile. Our team will contact you for payment.`
+                  )}
+                </p>
+              )}
             </div>
 
             {/* Generated Official Mistri Digital ID Card */}
@@ -390,7 +450,10 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                 <img
                   src={registeredMistri.photoUrl}
                   alt={registeredMistri.name}
-                  className="w-16 h-16 rounded-xl object-cover border-2 border-[#FFB800]"
+                  onError={(e) => {
+                    e.currentTarget.src = DEFAULT_AVATAR_URI;
+                  }}
+                  className="w-16 h-16 rounded-xl object-cover border-2 border-[#FFB800] bg-[#EAE3D6]"
                 />
                 <div className="min-w-0 flex-1">
                   <div className="text-base font-black text-white truncate">
@@ -478,7 +541,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
             {t('reg_page_title', 'Register as a Verified Mistri')}
           </h1>
           <p className="text-xs sm:text-sm text-gray-600 mt-2 font-medium">
-            {t('reg_page_subtitle', '100% Free Registration • 0% Platform Commission • Direct WhatsApp & Phone Calls From Local Homeowners.')}
+            {t('reg_page_subtitle', 'Free & Paid Plans • 0% Platform Commission • Direct WhatsApp & Phone Calls From Local Homeowners.')}
           </p>
         </div>
 
@@ -498,7 +561,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                 {/* State Dropdown */}
                 <div>
                   <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                    State (8 States Supported) *
+                    {t('reg_state_label', 'State ({count} States Supported) *', { count: SUPPORTED_STATES.length })}
                   </label>
                   <select
                     value={formData.state}
@@ -812,22 +875,15 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                 {/* Profile Photo Uploader */}
                 <div className="md:col-span-4 p-5 rounded-2xl bg-[#FAFAFA] border-2 border-gray-200 text-center space-y-3">
                   <div className="text-xs font-black text-black">
-                    Profile Photograph *
+                    Profile Photograph <span className="text-gray-400 font-bold">(Optional)</span>
                   </div>
 
                   <div className="relative w-28 h-28 mx-auto rounded-2xl overflow-hidden border-2 border-gray-300 bg-white group shadow-sm">
-                    {formData.profilePhoto ? (
-                      <img
-                        src={formData.profilePhoto}
-                        alt="Profile preview"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 text-xs font-bold">
-                        <Upload className="w-6 h-6 mb-1" />
-                        <span>Upload Photo</span>
-                      </div>
-                    )}
+                    <img
+                      src={formData.profilePhoto || DEFAULT_AVATAR_URI}
+                      alt={formData.profilePhoto ? 'Profile preview' : 'Default profile avatar'}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
 
                   <label className="inline-block px-4 py-2 rounded-xl bg-black hover:bg-gray-800 text-[#FFB800] text-xs font-bold cursor-pointer transition-colors shadow-sm">
@@ -839,7 +895,21 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                       className="hidden"
                     />
                   </label>
-                  <p className="text-[10px] text-gray-500 font-medium">Clear face photos build direct customer trust</p>
+                  {formData.profilePhoto && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormData((previousData) => ({ ...previousData, profilePhoto: null }));
+                        clearFieldError('profilePhoto');
+                      }}
+                      className="block mx-auto text-[10px] font-bold text-gray-500 hover:text-black underline"
+                    >
+                      Remove photo
+                    </button>
+                  )}
+                  <p className="text-[10px] text-gray-500 font-medium">
+                    Optional — a real photo builds customer trust. A default avatar is used if you skip it.
+                  </p>
                   {errors.profilePhoto && <p className="text-[11px] text-red-500 font-bold">{errors.profilePhoto}</p>}
                 </div>
 
@@ -909,11 +979,11 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                   </div>
                   <div>
                     <div className="text-sm font-black text-white flex items-center gap-2">
-                      <span>100% Free Registration & Direct Customer Access</span>
+                      <span>Verified Registration & Direct Customer Access</span>
                       <span className="text-[10px] bg-[#FFB800] text-black font-black px-2 py-0.5 rounded uppercase">0% Commission</span>
                     </div>
                     <div className="text-xs text-gray-300 font-medium mt-0.5">
-                      No monthly fees, no lead deductions, and zero hidden platform charges. All earnings go 100% to you.
+                      No lead deductions and zero hidden platform charges. Every rupee you earn from a job stays with you.
                     </div>
                   </div>
                 </div>
@@ -947,6 +1017,102 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                   </p>
                 )}
               </div>
+            </div>
+
+            {/* Listing Plan: Free vs Paid */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-xs font-black text-black uppercase tracking-wider pb-2 border-b border-gray-200">
+                <Crown className="w-4 h-4 text-black" />
+                <span>{t('reg_step_plan', '7. Choose Your Listing Plan')}</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {REGISTRATION_PLANS.map((plan) => {
+                  const isSelected = formData.subscriptionPlan === plan.id;
+                  return (
+                    <button
+                      key={plan.id}
+                      type="button"
+                      onClick={() => {
+                        setFormData((prev) => ({ ...prev, subscriptionPlan: plan.id }));
+                        clearFieldError('subscriptionPlan');
+                      }}
+                      className={`text-left p-5 rounded-2xl border-2 transition-all ${
+                        isSelected
+                          ? 'border-black bg-[#FFF9EC] shadow-md'
+                          : 'border-gray-200 bg-white hover:border-black'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <div className="text-sm font-black text-black flex items-center gap-1.5">
+                            {plan.id === 'PAID' && <Crown className="w-4 h-4 text-[#FFB800]" />}
+                            <span>{plan.name}</span>
+                          </div>
+                          <div className="text-[11px] font-bold text-gray-500 mt-0.5">{plan.tagline}</div>
+                        </div>
+                        <span
+                          className={`w-4 h-4 rounded-full border-2 shrink-0 mt-0.5 ${
+                            isSelected ? 'border-black bg-black' : 'border-gray-300 bg-white'
+                          }`}
+                        />
+                      </div>
+
+                      <div className="mt-3 flex items-baseline gap-1.5">
+                        <span className="text-2xl font-black text-black">{plan.price}</span>
+                        <span className="text-[11px] font-bold text-gray-500">{plan.priceNote}</span>
+                      </div>
+
+                      <ul className="mt-3 space-y-1.5">
+                        {plan.features.map((feature) => (
+                          <li key={feature} className="text-[11px] text-gray-700 font-medium flex items-start gap-1.5">
+                            <Check className="w-3.5 h-3.5 text-[#FFB800] stroke-[3] shrink-0 mt-0.5" />
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {formData.subscriptionPlan === 'PAID' && (
+                <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-[11px] font-bold">
+                  {isCheckingPaidSlot ? (
+                    <span className="flex items-center gap-1.5 text-gray-500">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      {t('reg_plan_checking', 'Checking availability for your area…')}
+                    </span>
+                  ) : paidSlot && !paidSlot.available && paidSlot.heldUntil ? (
+                    <span className="text-amber-700">
+                      {t(
+                        'reg_plan_taken',
+                        `The paid top spot for ${formData.city} · ${formData.category} is currently held until ${formatSlotDate(
+                          paidSlot.heldUntil
+                        )}. You can still register on the Paid plan — an admin will confirm the spot when your profile is approved.`
+                      )}
+                    </span>
+                  ) : paidSlot && paidSlot.available ? (
+                    <span className="text-emerald-700 flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      {t(
+                        'reg_plan_open',
+                        `The paid top spot for ${formData.city} · ${formData.category} is open. It is confirmed once an admin approves your profile.`
+                      )}
+                    </span>
+                  ) : (
+                    <span className="text-gray-500">
+                      {t(
+                        'reg_plan_paid_hint',
+                        `₹${PAID_PLAN_PRICE_INR} per year, fixed. Our team collects payment offline after you register. Your top spot goes live once an admin approves your profile.`
+                      )}
+                    </span>
+                  )}
+                </div>
+              )}
+              {errors.subscriptionPlan && (
+                <p className="text-[11px] text-red-500 font-bold">{errors.subscriptionPlan}</p>
+              )}
             </div>
 
             {/* Terms & Policies Checkbox */}
@@ -991,7 +1157,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                 ) : (
                   <>
                     <ShieldCheck className="w-5 h-5 text-black stroke-[2.5]" />
-                    <span>{t('reg_btn_submit', 'Submit Free Registration')}</span>
+                    <span>{t('reg_btn_submit', 'Submit Registration')}</span>
                   </>
                 )}
               </button>

@@ -43,10 +43,45 @@ export async function storeImage(image: string, folder: string): Promise<StoredI
   };
 }
 
+/** Uploads a base64 data URL (or passes through an https URL) as a Cloudinary video. */
+export async function storeVideo(video: string, folder: string): Promise<StoredImage> {
+  if (/^https?:\/\//i.test(video)) {
+    return { url: video, publicId: null };
+  }
+
+  if (!hasCloudinaryConfiguration) {
+    throw new HttpError(
+      503,
+      "Video uploading is not configured. Add the Cloudinary values to the backend .env file.",
+    );
+  }
+
+  const result = await cloudinary.uploader.upload(video, {
+    folder,
+    resource_type: "video",
+  });
+
+  return {
+    url: result.secure_url,
+    publicId: result.public_id,
+  };
+}
+
 export async function removeStoredImages(publicIds: string[]): Promise<void> {
   if (!hasCloudinaryConfiguration || publicIds.length === 0) {
     return;
   }
 
   await Promise.allSettled(publicIds.map((publicId) => cloudinary.uploader.destroy(publicId)));
+}
+
+/** Deletes Cloudinary assets that were stored as videos (needs the video resource_type). */
+export async function removeStoredVideos(publicIds: string[]): Promise<void> {
+  if (!hasCloudinaryConfiguration || publicIds.length === 0) {
+    return;
+  }
+
+  await Promise.allSettled(
+    publicIds.map((publicId) => cloudinary.uploader.destroy(publicId, { resource_type: "video" })),
+  );
 }

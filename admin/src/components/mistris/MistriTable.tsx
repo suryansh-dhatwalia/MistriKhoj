@@ -21,6 +21,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import { Mistri } from '../../types/mistri.types';
 import { SafeImage } from '../common/SafeImage';
+import { PlanChip } from './PlanChip';
 import { formatDateOnly, formatExperience, formatPhoneNumber } from '../../utils/format.utils';
 import { brandColors } from '../../theme/theme';
 
@@ -73,6 +74,7 @@ export const MistriTable: React.FC<MistriTableProps> = ({
               <TableCell>State</TableCell>
               <TableCell>City</TableCell>
               <TableCell>Category</TableCell>
+              <TableCell>Plan</TableCell>
               <TableCell>Experience</TableCell>
               <TableCell>Registration Date</TableCell>
               <TableCell align="right" sx={{ pr: 3 }}>
@@ -168,6 +170,10 @@ export const MistriTable: React.FC<MistriTableProps> = ({
                   >
                     {mistri.category}
                   </Box>
+                </TableCell>
+
+                <TableCell>
+                  <PlanChip mistri={mistri} />
                 </TableCell>
 
                 <TableCell>

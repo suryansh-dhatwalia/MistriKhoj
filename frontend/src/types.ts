@@ -47,6 +47,8 @@ export interface ServiceCategory {
   popularServices: string[];
 }
 
+export type MistriPlan = 'FREE' | 'PAID';
+
 export interface Technician {
   id: string;
   name: string;
@@ -72,6 +74,12 @@ export interface Technician {
   policeVerified: boolean;
   skillTestCertified: boolean;
   memberSince: string;
+  /** Subscription plan of the underlying registration. */
+  plan: MistriPlan;
+  /** True while this Mistri holds the paid top slot for their state + city + category. */
+  isFeatured: boolean;
+  /** ISO date the paid top slot expires, or null when not featured. */
+  featuredUntil: string | null;
 }
 
 export interface SubscriptionPlan {
@@ -103,7 +111,7 @@ export interface MistriRegistrationFormData {
   profilePhoto: string | null; // data URL or mock file
   galleryImages: string[]; // up to 3
   referralCode: string;
-  subscriptionPlan: 'free_starter' | 'silver_pro' | 'gold_master' | 'platinum_partner';
+  subscriptionPlan: MistriPlan;
   acceptedTerms: boolean;
 }
 
@@ -158,6 +166,16 @@ export interface MistriListItem {
   profilePhotoUrl: string;
   galleryImages: string[];
   createdAt: string;
+  plan: MistriPlan;
+  isFeatured: boolean;
+  featuredUntil: string | null;
+}
+
+export interface PaidSlotStatusResponse {
+  success: boolean;
+  available: boolean;
+  heldUntil: string | null;
+  priceInr: number;
 }
 
 export interface MistriListApiResponse {

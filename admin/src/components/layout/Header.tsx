@@ -53,6 +53,19 @@ export const Header: React.FC<HeaderProps> = ({
     if (path.includes('/profile')) {
       return { breadcrumb: 'Admin / Profile', title: 'Administrator Settings' };
     }
+    if (path.startsWith('/content/states')) return { breadcrumb: 'Admin / Masters', title: 'States' };
+    if (path.startsWith('/content/cities')) return { breadcrumb: 'Admin / Masters', title: 'Cities' };
+    if (path.startsWith('/content/categories')) return { breadcrumb: 'Admin / Masters', title: 'Categories' };
+    if (path.startsWith('/content/referrals')) return { breadcrumb: 'Admin / Masters', title: 'Referrals' };
+    if (path.startsWith('/content/ads/banners')) return { breadcrumb: 'Admin / Advertising', title: 'Banner Ads' };
+    if (path.startsWith('/content/ads/category')) return { breadcrumb: 'Admin / Advertising', title: 'Category Ads' };
+    if (path.startsWith('/content/ads/requests')) return { breadcrumb: 'Admin / Advertising', title: 'Ad Requests' };
+    if (path.startsWith('/content/videos')) return { breadcrumb: 'Admin / Advertising', title: 'Videos' };
+    if (path.startsWith('/content/testimonials')) return { breadcrumb: 'Admin / Content', title: 'Testimonials' };
+    if (path.startsWith('/content/plans')) return { breadcrumb: 'Admin / Content', title: 'Subscription Plans' };
+    if (path.startsWith('/reports/audit')) return { breadcrumb: 'Admin / Reports', title: 'Audit Log' };
+    if (path.startsWith('/reports')) return { breadcrumb: 'Admin / Reports', title: 'Reports Overview' };
+    if (path.startsWith('/settings')) return { breadcrumb: 'Admin / Settings', title: 'Site Settings' };
     return { breadcrumb: 'Admin / Dashboard', title: 'System Overview' };
   };
 

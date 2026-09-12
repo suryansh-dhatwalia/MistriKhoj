@@ -11,6 +11,7 @@ import {
   Check
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { useContent } from '../context/ContentContext';
 
 interface HowItWorksProps {
   onRegisterClick: () => void;
@@ -18,6 +19,7 @@ interface HowItWorksProps {
 
 export const HowItWorks: React.FC<HowItWorksProps> = ({ onRegisterClick }) => {
   const { t } = useLanguage();
+  const { states } = useContent();
   const [activeTab, setActiveTab] = useState<'customer' | 'mistri'>('customer');
 
   const customerSteps = [
@@ -169,7 +171,7 @@ export const HowItWorks: React.FC<HowItWorksProps> = ({ onRegisterClick }) => {
               {t('how_cta_title', 'Are you a professional craftsman looking for direct client calls?')}
             </h4>
             <p className="text-xs text-gray-400">
-              {t('how_cta_subtitle', 'Join 15,000+ verified professionals across 8 states. 100% free registration.')}
+              {t('how_cta_subtitle', 'Join 15,000+ verified professionals across {count} states. 100% free registration.', { count: states.length })}
             </p>
           </div>
 

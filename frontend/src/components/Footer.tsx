@@ -5,8 +5,7 @@ import {
   Phone,
   HardHat
 } from 'lucide-react';
-import { SUPPORTED_STATES } from '../data/locations';
-import { SERVICE_CATEGORIES } from '../data/categories';
+import { useContent } from '../context/ContentContext';
 import { SupportedState } from '../types';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -24,6 +23,7 @@ export const Footer: React.FC<FooterProps> = ({
   onNavigateRegister
 }) => {
   const { t } = useLanguage();
+  const { states: SUPPORTED_STATES, categories: SERVICE_CATEGORIES } = useContent();
 
   return (
     <footer className="bg-[#0D0F12] text-white border-t border-black pt-16 pb-48">
@@ -74,10 +74,10 @@ export const Footer: React.FC<FooterProps> = ({
             </div>
           </div>
 
-          {/* Col 2: Supported 8 States */}
+          {/* Col 2: Supported States */}
           <div className="space-y-3">
             <h4 className="font-display font-black text-xs uppercase tracking-widest text-[#FFB800]">
-              {t('footer_states_title', 'Supported 8 States')}
+              {t('footer_states_title', 'Supported {count} States', { count: SUPPORTED_STATES.length })}
             </h4>
             <ul className="space-y-1.5 text-xs text-gray-400 font-medium">
               {SUPPORTED_STATES.map((st) => (

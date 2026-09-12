@@ -5,15 +5,30 @@ import { prisma } from "./lib/prisma.js";
 async function startServer(): Promise<void> {
   await prisma.$connect();
 
-  const server = app.listen(env.PORT, () => {
-    console.log(`MistriKhoj API is running at http://localhost:${env.PORT}`);
+  const server = app.listen(env.PORT);
+  await new Promise<void>((resolve, reject) => {
+    server.once("listening", resolve);
+    server.once("error", reject);
   });
+  console.log(`MistriKhoj API is running on port ${env.PORT}`);
 
+  let isShuttingDown = false;
   const shutdown = async (signal: string) => {
+    if (isShuttingDown) return;
+    isShuttingDown = true;
     console.log(`${signal} received. Closing the API...`);
-    server.close(async () => {
+
+    const forceShutdownTimer = setTimeout(() => {
+      console.error("Graceful shutdown timed out; forcing exit.");
+      server.closeAllConnections();
+      process.exit(1);
+    }, env.SHUTDOWN_TIMEOUT_MS);
+    forceShutdownTimer.unref();
+
+    server.close(async (error) => {
+      clearTimeout(forceShutdownTimer);
       await prisma.$disconnect();
-      process.exit(0);
+      process.exit(error ? 1 : 0);
     });
   };
 

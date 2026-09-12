@@ -1,26 +1,10 @@
 import { z } from "zod";
-
-const phoneSchema = z
-  .string()
-  .trim()
-  .transform((phone) => phone.replace(/[\s()-]/g, "").replace(/^(?:\+91|91)/, ""))
-  .pipe(z.string().regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit Indian mobile number"));
-
-const optionalPhoneSchema = z.preprocess(
-  (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
-  phoneSchema.optional(),
-);
+import { optionalPhoneSchema, optionalText, phoneSchema } from "./shared.js";
 
 const optionalPincodeSchema = z.preprocess(
   (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
   z.string().trim().regex(/^\d{6}$/, "PIN code must contain exactly 6 digits").optional(),
 );
-
-const optionalText = (maximum: number) =>
-  z.preprocess(
-    (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
-    z.string().trim().max(maximum).optional(),
-  );
 
 export const adminLoginSchema = z.object({
   email: z.string().trim().email().max(191).transform((email) => email.toLowerCase()),
@@ -58,6 +42,7 @@ export const adminMistriQuerySchema = z.object({
   state: optionalText(100),
   city: optionalText(100),
   category: optionalText(120),
+  plan: z.enum(["FREE", "PAID"]).optional(),
   sortBy: z.enum(["createdAt", "experienceYears", "fullName", "id"]).default("createdAt"),
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
 });
@@ -75,6 +60,7 @@ export const adminMistriUpdateSchema = z.object({
   experienceYears: z.coerce.number().int().min(0).max(80),
   servicesOffered: z.array(z.string().trim().min(2).max(120)).min(1).max(20),
   shortIntro: optionalText(2_000).nullable(),
+  plan: z.enum(["FREE", "PAID"]).optional(),
 });
 
 export const rejectMistriSchema = z.object({

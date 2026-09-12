@@ -11,6 +11,21 @@ const routeNames: Record<string, string> = {
   pending: 'Pending Registrations',
   approved: 'Approved Mistris',
   profile: 'Admin Profile',
+  content: 'Content',
+  states: 'States',
+  cities: 'Cities',
+  categories: 'Categories',
+  referrals: 'Referrals',
+  ads: 'Advertising',
+  banners: 'Banner Ads',
+  category: 'Category Ads',
+  requests: 'Ad Requests',
+  videos: 'Videos',
+  testimonials: 'Testimonials',
+  plans: 'Plans',
+  reports: 'Reports',
+  audit: 'Audit Log',
+  settings: 'Site Settings',
 };
 
 export const Breadcrumbs: React.FC = () => {

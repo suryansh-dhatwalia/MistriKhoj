@@ -5,7 +5,7 @@ import { LANGUAGE_OPTIONS, TRANSLATIONS, TranslationKey } from '../data/translat
 interface LanguageContextType {
   language: SupportedLanguage;
   setLanguage: (lang: SupportedLanguage) => void;
-  t: (key: string, fallback?: string) => string;
+  t: (key: string, fallback?: string, vars?: Record<string, string | number>) => string;
   currentLanguageOption: typeof LANGUAGE_OPTIONS[0];
 }
 
@@ -33,17 +33,17 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   };
 
-  const t = (key: string, fallback?: string): string => {
+  const t = (key: string, fallback?: string, vars?: Record<string, string | number>): string => {
     const langDict = (TRANSLATIONS[language] || {}) as Record<string, string>;
-    if (langDict && langDict[key]) {
-      return langDict[key];
-    }
-    // Fallback to English dictionary if key not found
     const enDict = (TRANSLATIONS.en || {}) as Record<string, string>;
-    if (enDict && enDict[key]) {
-      return enDict[key];
+    let result = (langDict && langDict[key]) || (enDict && enDict[key]) || fallback || key;
+    // Interpolate {placeholder} tokens (e.g. dynamic counts driven by CMS data).
+    if (vars) {
+      for (const [name, value] of Object.entries(vars)) {
+        result = result.split(`{${name}}`).join(String(value));
+      }
     }
-    return fallback || key;
+    return result;
   };
 
   const currentLanguageOption = LANGUAGE_OPTIONS.find(l => l.code === language) || LANGUAGE_OPTIONS[0];

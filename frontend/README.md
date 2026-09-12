@@ -1,20 +1,7 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# MistriKhoj public website
 
-# Run and deploy your AI Studio app
+The public React application runs locally on port 5173.
 
-This contains everything you need to run your app locally.
+Copy .env.example to .env, set VITE_API_URL, install dependencies with npm ci, and run npm run dev.
 
-View your app in AI Studio: https://ai.studio/apps/48069595-9101-4ea6-87f3-db4482a19b28
-
-## Run Locally
-
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+For production, run npm run build and publish the dist directory on a static website host. Configure unknown routes to fall back to index.html. See the repository README for the full release checklist.

@@ -18,10 +18,13 @@ export function readSessionToken(request: Request): string | null {
 }
 
 function cookieOptions(): CookieOptions {
+  const sameSite = env.ADMIN_COOKIE_SAME_SITE ?? (env.NODE_ENV === "production" ? "none" : "lax");
+
   return {
     httpOnly: true,
-    secure: env.NODE_ENV === "production",
-    sameSite: env.NODE_ENV === "production" ? "none" : "lax",
+    secure: env.NODE_ENV === "production" || sameSite === "none",
+    sameSite,
+    ...(env.ADMIN_COOKIE_DOMAIN ? { domain: env.ADMIN_COOKIE_DOMAIN } : {}),
     path: "/",
     maxAge: env.ADMIN_SESSION_DAYS * 24 * 60 * 60 * 1000,
   };

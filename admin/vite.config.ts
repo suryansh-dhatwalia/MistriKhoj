@@ -11,6 +11,19 @@ export default defineConfig(() => {
         '@': path.resolve(__dirname, '.'),
       },
     },
+    build: {
+      target: 'es2022',
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            react: ['react', 'react-dom', 'react-router-dom'],
+            mui: ['@mui/material', '@mui/icons-material', '@emotion/react', '@emotion/styled'],
+            forms: ['react-hook-form', '@hookform/resolvers', 'zod'],
+            api: ['axios'],
+          },
+        },
+      },
+    },
     server: {
       port: 5174,
       // HMR is disabled in AI Studio via DISABLE_HMR env var.

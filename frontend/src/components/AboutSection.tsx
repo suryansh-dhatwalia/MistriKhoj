@@ -7,9 +7,12 @@ import {
   Check
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { useContent } from '../context/ContentContext';
 
 export const AboutSection: React.FC = () => {
   const { t } = useLanguage();
+  const { states } = useContent();
+  const stateCount = states.length;
 
   return (
     <section id="about-section" className="py-16 sm:py-24 bg-[#FAFAFA] border-b border-gray-200">
@@ -36,7 +39,7 @@ export const AboutSection: React.FC = () => {
           
           <div className="lg:col-span-6 space-y-4">
             <h3 className="font-display text-2xl sm:text-3xl font-black text-[#111827] leading-tight">
-              {t('about_headline', 'Empowering 15,000+ Skilled Craftsmen with Digital Identity')}
+              {t('about_headline', 'Empowering 15,000+ Skilled Craftsmen with Digital Identity', { count: stateCount })}
             </h3>
             <p className="text-xs sm:text-sm text-gray-700 leading-relaxed font-normal">
               {t('about_p1')}
@@ -89,7 +92,7 @@ export const AboutSection: React.FC = () => {
 
               <div className="mt-6 grid grid-cols-2 gap-3">
                 <div className="p-4 rounded-xl bg-gray-50 border border-gray-200">
-                  <div className="font-heading-impact text-3xl font-black text-black">{t('about_stat_states', '8 States')}</div>
+                  <div className="font-heading-impact text-3xl font-black text-black">{t('about_stat_states', '{count} States', { count: stateCount })}</div>
                   <div className="text-xs text-gray-600 font-semibold mt-0.5">{t('about_stat_states_desc', 'Assam, MH, RJ, UP, WB, NE')}</div>
                 </div>
                 <div className="p-4 rounded-xl bg-gray-50 border border-gray-200">

@@ -1,0 +1,15 @@
+{
+  "name": "mistrikhoj",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "typecheck": "npm --prefix frontend run typecheck && npm --prefix admin run typecheck && npm --prefix backend run typecheck",
+    "test": "npm --prefix backend test",
+    "build": "npm --prefix frontend run build && npm --prefix admin run build && npm --prefix backend run build",
+    "check": "npm run typecheck && npm run test && npm run build"
+  }
+}
+
