@@ -9,4 +9,4 @@
 **/.env.*
 !**/.env.example
 backend/generated/prisma/
-
+mistrikhoj-migration
