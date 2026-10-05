@@ -22,6 +22,7 @@ import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import { Mistri } from '../../types/mistri.types';
 import { SafeImage } from '../common/SafeImage';
 import { PlanChip } from './PlanChip';
+import { AvailabilityToggle } from './AvailabilityToggle';
 import { formatDateOnly, formatExperience, formatPhoneNumber } from '../../utils/format.utils';
 import { brandColors } from '../../theme/theme';
 
@@ -35,6 +36,7 @@ interface MistriTableProps {
   onView: (mistri: Mistri) => void;
   onEdit: (mistri: Mistri) => void;
   onApprove?: (mistri: Mistri) => void;
+  onToggleAvailability?: (mistri: Mistri) => void;
   onRejectOrDelete: (mistri: Mistri) => void;
   isPendingTable?: boolean;
 }
@@ -49,6 +51,7 @@ export const MistriTable: React.FC<MistriTableProps> = ({
   onView,
   onEdit,
   onApprove,
+  onToggleAvailability,
   onRejectOrDelete,
   isPendingTable = false,
 }) => {
@@ -75,6 +78,7 @@ export const MistriTable: React.FC<MistriTableProps> = ({
               <TableCell>City</TableCell>
               <TableCell>Category</TableCell>
               <TableCell>Plan</TableCell>
+              {onToggleAvailability && <TableCell>Visibility</TableCell>}
               <TableCell>Experience</TableCell>
               <TableCell>Registration Date</TableCell>
               <TableCell align="right" sx={{ pr: 3 }}>
@@ -175,6 +179,12 @@ export const MistriTable: React.FC<MistriTableProps> = ({
                 <TableCell>
                   <PlanChip mistri={mistri} />
                 </TableCell>
+
+                {onToggleAvailability && (
+                  <TableCell>
+                    <AvailabilityToggle mistri={mistri} onToggle={() => onToggleAvailability(mistri)} />
+                  </TableCell>
+                )}
 
                 <TableCell>
                   <Typography variant="body2" sx={{ color: '#4B5563', fontSize: '0.8125rem' }}>

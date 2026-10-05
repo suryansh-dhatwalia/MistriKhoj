@@ -21,7 +21,6 @@ export type TranslationKey =
   | 'nav_register_mistri'
   | 'nav_about'
   | 'nav_contact'
-  | 'nav_emergency_sos'
   | 'nav_book_service'
   | 'nav_search_placeholder'
   | 'hero_emergency_badge'
@@ -91,8 +90,6 @@ export type TranslationKey =
   | 'trust_card2_desc'
   | 'trust_card3_title'
   | 'trust_card3_desc'
-  | 'trust_card4_title'
-  | 'trust_card4_desc'
   | 'cat_badge'
   | 'cat_title'
   | 'cat_subtitle'
@@ -110,10 +107,7 @@ export type TranslationKey =
   | 'footer_helpline'
   | 'footer_states_title'
   | 'footer_crafts_title'
-  | 'footer_safety_title'
-  | 'sos_title'
-  | 'sos_subtitle'
-  | 'sos_hotline';
+  | 'footer_safety_title';
 
 export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, string>> = {
   hi: {
@@ -125,7 +119,6 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     nav_register_mistri: 'मिस्त्री रजिस्टर',
     nav_about: 'हमारे बारे में',
     nav_contact: 'संपर्क करें',
-    nav_emergency_sos: '24/7 आपातकालीन SOS',
     nav_book_service: 'सेवा बुक करें',
     nav_search_placeholder: 'इलेक्ट्रीशियन, प्लंबर, बढ़ई, पेंटर खोजें...',
     hero_emergency_badge: '100% निःशुल्क सीधी कॉल • 0% कमीशन',
@@ -168,7 +161,7 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     how_step3_desc: 'शून्य कमीशन के साथ सीधे फोन या व्हाट्सएप से बात करें और उचित मूल्य पर काम कराएं।',
     how_step1_mistri_title: '1. निःशुल्क प्रोफ़ाइल बनाएं',
     how_step1_mistri_desc: 'अपना नाम, फोन नंबर, कौशल और कार्य अनुभव दर्ज करके तुरंत पंजीकरण करें।',
-    how_step2_mistri_title: '2. आधार सत्यापन पूर्ण करें',
+    how_step2_mistri_title: '2. KYC सत्यापन पूर्ण करें',
     how_step2_mistri_desc: 'अपना डिजिटल मिस्त्री पहचान पत्र (ID Card) प्राप्त करें और विश्वास बढ़ाएं।',
     how_step3_mistri_title: '3. सीधे ग्राहकों के फोन प्राप्त करें',
     how_step3_mistri_desc: 'बिना किसी कमीशन कटौती के अपने इलाके से 100% कमाई सीधे अपने पास रखें।',
@@ -195,8 +188,6 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     trust_card2_desc: 'सुरक्षा सुनिश्चित करने के लिए स्थानीय पुलिस रिकॉर्ड और पृष्ठभूमि की जांच।',
     trust_card3_title: '0% बिचौलिया कमीशन',
     trust_card3_desc: 'ग्राहकों और कारीगरों के बीच सीधा संपर्क, कोई छिपा हुआ अतिरिक्त शुल्क नहीं।',
-    trust_card4_title: '24/7 आपातकालीन SOS हेल्पलाइन',
-    trust_card4_desc: 'शॉर्ट सर्किट, पाइप फटने या ताला टूटने की आपात स्थिति में तुरंत सहायता।',
     cat_badge: 'विशेषज्ञ शिल्प श्रेणियां',
     cat_title: 'लोकप्रिय घरेलू शिल्प व सेवाएं',
     cat_subtitle: 'इलेक्ट्रिकल वायरिंग और प्लंबिंग से लेकर उपकरण मरम्मत और बढ़ईगीरी तक।',
@@ -215,9 +206,6 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     footer_states_title: 'सपोर्टेड {count} राज्य',
     footer_crafts_title: 'प्रमुख शिल्प श्रेणियां',
     footer_safety_title: 'सुरक्षा एवं मानक',
-    sos_title: '24/7 आपातकालीन मिस्त्री SOS',
-    sos_subtitle: '15 मिनट में तत्काल कारीगर सहायता',
-    sos_hotline: '1800-889-6478',
   },
   en: {
     nav_brand_subtitle: 'DIRECT VERIFIED DIRECTORY',
@@ -228,7 +216,6 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     nav_register_mistri: 'Register Mistri',
     nav_about: 'About Us',
     nav_contact: 'Contact',
-    nav_emergency_sos: '24/7 Emergency SOS',
     nav_book_service: 'Book Service',
     nav_search_placeholder: 'Search Electrician, Plumber, Carpenter, Painter...',
     hero_emergency_badge: '100% FREE DIRECT CALL • 0% COMMISSION',
@@ -271,7 +258,7 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     how_step3_desc: 'Dial the ustad immediately or chat on WhatsApp. Agree on transparent rates with 0% middleman cut.',
     how_step1_mistri_title: '1. Create Free Profile',
     how_step1_mistri_desc: 'Enter your basic contact details, trade craft, city, and experience.',
-    how_step2_mistri_title: '2. Get Aadhaar Verified',
+    how_step2_mistri_title: '2. Get KYC Verified',
     how_step2_mistri_desc: 'Receive your verified digital Mistri ID card to build instant trust with homeowners.',
     how_step3_mistri_title: '3. Receive Direct Calls',
     how_step3_mistri_desc: 'Get genuine inquiries from local customers and keep 100% of your earnings.',
@@ -298,8 +285,6 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     trust_card2_desc: 'Local police record and background cross-checking for domestic security.',
     trust_card3_title: '0% Platform Commission',
     trust_card3_desc: 'Direct connection between customers and workers. Zero commission markups.',
-    trust_card4_title: '24/7 Emergency SOS Line',
-    trust_card4_desc: 'Immediate dispatch for short circuits, water pipe bursts, or door lock emergencies.',
     cat_badge: 'CRAFT CATEGORIES',
     cat_title: 'Explore Master Trades',
     cat_subtitle: 'From electrical wiring and plumbing to appliance repair and auto mechanics.',
@@ -318,9 +303,6 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     footer_states_title: 'Supported {count} States',
     footer_crafts_title: 'Craft Categories',
     footer_safety_title: 'Safety & Verification',
-    sos_title: '24/7 Emergency SOS Line',
-    sos_subtitle: '15-Minute Rapid Ustad Dispatch',
-    sos_hotline: '1800-889-6478',
   },
   bn: {
     nav_brand_subtitle: 'প্রত্যক্ষ যাচাইকৃত ডিরেক্টরি',
@@ -331,7 +313,6 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     nav_register_mistri: 'মিস্ত্রি নিবন্ধন',
     nav_about: 'আমাদের সম্পর্কে',
     nav_contact: 'যোগাযোগ',
-    nav_emergency_sos: 'জরুরি SOS',
     nav_book_service: 'বুক করুন',
     nav_search_placeholder: 'ইলেকট্রিশিয়ান, প্লাম্বার, কাঠমিস্ত্রি খুঁজুন...',
     hero_emergency_badge: '১০০% ফ্রি ডিরেক্ট কল • ০% কমিশন',
@@ -374,7 +355,7 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     how_step3_desc: '০% কমিশনে সরাসরি কথা বলে সঠিক মূল্যে কাজ করান।',
     how_step1_mistri_title: '১. বিনামূল্যে প্রোফাইল তৈরি করুন',
     how_step1_mistri_desc: 'নাম, ফোন নম্বর ও কাজের বিবরণ দিয়ে নিবন্ধন করুন।',
-    how_step2_mistri_title: '২. আধার কার্ড যাচাই করান',
+    how_step2_mistri_title: '২. KYC যাচাই করান',
     how_step2_mistri_desc: 'ডিজিটাল মিস্ত্রি পরিচয়পত্র পেয়ে গ্রাহকদের আস্থা অর্জন করুন।',
     how_step3_mistri_title: '৩. সরাসরি কাজের কল পান',
     how_step3_mistri_desc: 'কোনো কমিশন ছাড়াই সম্পূর্ণ উপার্জন নিজের কাছে রাখুন।',
@@ -401,8 +382,6 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     trust_card2_desc: 'স্থানীয় পুলিশ রেকর্ডের মাধ্যমে গৃহ নিরাপত্তার নিশ্চয়তা।',
     trust_card3_title: '০% প্ল্যাটফর্ম কমিশন',
     trust_card3_desc: 'গ্রাহক ও কারিগরের সরাসরি যোগাযোগ, কোনো অতিরিক্ত ফি নেই।',
-    trust_card4_title: '২৪/৭ জরুরি এসওএস লাইন',
-    trust_card4_desc: 'শর্ট সার্কিট বা পাইপ ফাটার মতো জরুরি অবস্থায় তাৎক্ষণিক সহায়তা।',
     cat_badge: 'কাজের বিভাগ',
     cat_title: 'জনপ্রিয় গৃহস্থালী কারিগরি',
     cat_subtitle: 'ইলেকট্রিক ওয়্যারিং, প্লাম্বিং থেকে এসি ও অটো মেকানিক।',
@@ -421,9 +400,6 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     footer_states_title: 'সাপোর্টেড {count}টি রাজ্য',
     footer_crafts_title: 'কাজের বিভাগ',
     footer_safety_title: 'নিরাপত্তা ও যাচাই',
-    sos_title: '২৪/৭ জরুরি মিস্ত্রি এসওএস',
-    sos_subtitle: '১৫ মিনিটে জরুরি কারিগর সহায়তা',
-    sos_hotline: '১৮০০-৮৮৯-৬৪৭৮',
   },
   mr: {
     nav_brand_subtitle: 'थेट सत्यापित डिरेक्टरी',
@@ -434,7 +410,6 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     nav_register_mistri: 'मिस्त्री रजिस्टर',
     nav_about: 'आमच्याबद्दल',
     nav_contact: 'संपर्क',
-    nav_emergency_sos: '२४/७ आपत्कालीन SOS',
     nav_book_service: 'सेवा बुक करा',
     nav_search_placeholder: 'इलेक्ट्रिशियन, प्लंबर, सुतार, पेंटर शोधा...',
     hero_emergency_badge: '१००% मोफत थेट कॉल • ०% कमिशन',
@@ -477,7 +452,7 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     how_step3_desc: 'कोणत्याही कमिशनशिवाय थेट फोन किंवा व्हॉट्सअॅपवर बोला.',
     how_step1_mistri_title: '१. मोफत प्रोफाइल तयार करा',
     how_step1_mistri_desc: 'तुमचे नाव, फोन आणि कामाचा अनुभव टाकून नोंदणी करा.',
-    how_step2_mistri_title: '२. आधार पडताळणी पूर्ण करा',
+    how_step2_mistri_title: '२. KYC पडताळणी पूर्ण करा',
     how_step2_mistri_desc: 'डिजिटल मिस्त्री ओळखपत्र मिळवा आणि ग्राहकांचा विश्वास वाढवा.',
     how_step3_mistri_title: '३. थेट ग्राहकांचे कॉल मिळवा',
     how_step3_mistri_desc: 'कोणतेही कमिशन न कापता १००% कमाई स्वतःकडे ठेवा.',
@@ -504,8 +479,6 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     trust_card2_desc: 'घरगुती सुरक्षेसाठी स्थानिक पोलीस रेकॉर्ड तपासणी.',
     trust_card3_title: '०% कमिशन',
     trust_card3_desc: 'ग्राहक आणि कारागिरांमध्ये थेट संपर्क, कोणतेही छुपे शुल्क नाही.',
-    trust_card4_title: '२४/७ आपत्कालीन SOS',
-    trust_card4_desc: 'शॉर्ट सर्किट किंवा पाईप फुटण्याच्या आणीबाणीत तात्काळ मदत.',
     cat_badge: 'कारागीर श्रेण्या',
     cat_title: 'लोकप्रिय घरगुती कामे',
     cat_subtitle: 'इलेक्ट्रिक वायरिंग, प्लंबिंग, फर्निचर ते उपकरण दुरुस्तीपर्यंत.',
@@ -524,9 +497,6 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     footer_states_title: '{count} राज्ये',
     footer_crafts_title: 'कामाच्या श्रेण्या',
     footer_safety_title: 'सुरक्षा व मानके',
-    sos_title: '२४/७ आपत्कालीन मिस्त्री SOS',
-    sos_subtitle: '१५ मिनिटांत तात्काळ मदत',
-    sos_hotline: '१८००-८८९-६४७८',
   },
   as: {
     nav_brand_subtitle: 'প্ৰত্যক্ষ প্ৰমাণিত নিৰ্দেশিকা',
@@ -537,7 +507,6 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     nav_register_mistri: 'মিস্ত্ৰী পঞ্জীয়ন',
     nav_about: 'আমাৰ বিষয়ে',
     nav_contact: 'যোগাযোগ',
-    nav_emergency_sos: '২৪/৭ জৰুৰীকালীন SOS',
     nav_book_service: 'সেৱা বুক কৰক',
     nav_search_placeholder: 'ইলেকট্ৰিচিয়ান, প্লাম্বাৰ, কাঠমিস্ত্ৰী সন্ধান কৰক...',
     hero_emergency_badge: '১০০% বিনামূলীয়া প্ৰত্যক্ষ কল • ০% কমিছন',
@@ -580,7 +549,7 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     how_step3_desc: '০% কমিছনত পোনপটীয়া কথা পাতি কাম সমাধান কৰক।',
     how_step1_mistri_title: '১. বিনামূলীয়া প্ৰফাইল বনাওক',
     how_step1_mistri_desc: 'নাম, ফোন আৰু কৰ্ম অভিজ্ঞতা দি পঞ্জীয়ন কৰক।',
-    how_step2_mistri_title: '২. আধাৰ সত্যাপন কৰক',
+    how_step2_mistri_title: '২. KYC সত্যাপন কৰক',
     how_step2_mistri_desc: 'ডিজিটেল মিস্ত্ৰী কাৰ্ড লৈ গ্ৰাহকৰ বিশ্বাস বৃদ্ধি কৰক।',
     how_step3_mistri_title: '৩. পোনপটীয়া কল লাভ কৰক',
     how_step3_mistri_desc: 'কোনো কমিছন নোহোৱাকৈ ১০০% উপাৰ্জন নিজৰ লগত ৰাখক।',
@@ -607,8 +576,6 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     trust_card2_desc: 'সুৰক্ষা নিশ্চিত কৰিবলৈ স্থানীয় আৰক্ষী ৰেকৰ্ড পৰীক্ষা।',
     trust_card3_title: '০% মঞ্চ কমিছন',
     trust_card3_desc: 'গ্ৰাহক আৰু কাৰিকৰৰ পোনপটীয়া যোগাযোগ, কোনো লুকাই থকা মাচুল নাই।',
-    trust_card4_title: '২৪/৭ জৰুৰীকালীন SOS লাইন',
-    trust_card4_desc: 'শ্বৰ্ট চাৰ্কিট বা পাইপ ফুটা আদিৰ জৰুৰী অৱস্থাত তৎক্ষণাৎ সাহায্য।',
     cat_badge: 'কাৰিকৰী শ্ৰেণী',
     cat_title: 'ঘৰুৱা কাৰিকৰী সেৱা',
     cat_subtitle: 'ইলেকট্ৰিক ৱায়াৰিং, প্লাম্বিংৰ পৰা এচি আৰু বাহন মেকানিক।',
@@ -627,9 +594,6 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     footer_states_title: '{count}খন ৰাজ্য',
     footer_crafts_title: 'সেৱা শ্ৰেণী',
     footer_safety_title: 'সুৰক্ষা আৰু মান',
-    sos_title: '২৪/৭ জৰুৰীকালীন মিস্ত্ৰী SOS',
-    sos_subtitle: '১৫ মিনিটত জৰুৰী কাৰিকৰ সহায়',
-    sos_hotline: '১৮০০-৮৮৯-৬৪৭৮',
   },
   gu: {
     nav_brand_subtitle: 'પ્રત્યક્ષ ચકાસાયેલ ડિરેક્ટરી',
@@ -640,7 +604,6 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     nav_register_mistri: 'મિસ્ત્રી રજીસ્ટર',
     nav_about: 'અમારા વિશે',
     nav_contact: 'સંપર્ક',
-    nav_emergency_sos: '૨૪/૭ ઇમરજન્સી SOS',
     nav_book_service: 'બુકિંગ કરો',
     nav_search_placeholder: 'ઇલેક્ટ્રિશિયન, પ્લમ્બર, સુથાર, પેઇન્ટર શોધો...',
     hero_emergency_badge: '૧૦૦% મફત સીધો કૉલ • ૦% કમિશન',
@@ -683,7 +646,7 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     how_step3_desc: 'શૂન્ય કમિશન સાથે સીધો ફોન અથવા વોટ્સએપ પર વાત કરો.',
     how_step1_mistri_title: '૧. મફત પ્રોફાઇલ બનાવો',
     how_step1_mistri_desc: 'તમારું નામ, ફોન અને અનુભવ દાખલ કરી નોંધણી કરો.',
-    how_step2_mistri_title: '૨. આધાર વેરિફિકેશન કરાવો',
+    how_step2_mistri_title: '૨. KYC વેરિફિકેશન કરાવો',
     how_step2_mistri_desc: 'ડિજિટલ મિસ્ત્રી ઓળખપત્ર મેળવી ગ્રાહકોનો વિશ્વાસ જીતો.',
     how_step3_mistri_title: '૩. સીધા ગ્રાહકોના કૉલ મેળવો',
     how_step3_mistri_desc: 'કોઈપણ કમિશન કપાત વિના ૧૦૦% કમાણી પોતાની પાસે રાખો.',
@@ -710,8 +673,6 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     trust_card2_desc: 'ઘરની સુરક્ષા માટે સ્થાનિક પોલીસ રેકોર્ડની ચકાસણી.',
     trust_card3_title: '૦% પ્લેટફોર્મ કમિશન',
     trust_card3_desc: 'ગ્રાહક અને કારીગર વચ્ચે સીધો સંપર્ક, કોઈ વધારાનો ચાર્જ નહીં.',
-    trust_card4_title: '૨૪/૭ ઇમરજન્સી SOS હેલ્પલાઇન',
-    trust_card4_desc: 'શોર્ટ સર્કિટ કે પાઇપ તૂટવા જેવી તાત્કાલિક સ્થિતિમાં મદદ.',
     cat_badge: 'કારીગરી શ્રેણીઓ',
     cat_title: 'ઘર વપરાશની લોકપ્રિય સેવાઓ',
     cat_subtitle: 'વાયરિંગ, પ્લમ્બિંગથી લઈને ઉપકરણ રિપેરિંગ સુધી.',
@@ -730,9 +691,6 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     footer_states_title: 'સપોર્ટેડ {count} રાજ્યો',
     footer_crafts_title: 'સેવા શ્રેણીઓ',
     footer_safety_title: 'સુરક્ષા અને ધોરણો',
-    sos_title: '૨૪/૭ ઇમરજન્સી કારીગર SOS',
-    sos_subtitle: '૧૫ મિનિટમાં તાત્કાલિક સહાય',
-    sos_hotline: '૧૮૦૦-૮૮૯-૬૪૭૮',
   },
   ta: {
     nav_brand_subtitle: 'நேரடி சரிபார்க்கப்பட்ட அடைவு',
@@ -743,7 +701,6 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     nav_register_mistri: 'மிஸ்திரி பதிவு',
     nav_about: 'எங்களைப் பற்றி',
     nav_contact: 'தொடர்புக்கு',
-    nav_emergency_sos: '24/7 அவசர SOS',
     nav_book_service: 'சேவை பதிவு',
     nav_search_placeholder: 'எலக்ட்ரீஷியன், பிளம்பர், தச்சர் தேடவும்...',
     hero_emergency_badge: '100% இலவச நேரடி அழைப்பு • 0% கமிஷன்',
@@ -786,7 +743,7 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     how_step3_desc: '0% கமிஷனில் பேசி சரியான கட்டணத்தில் வேலையை முடிக்கவும்.',
     how_step1_mistri_title: '1. இலவச சுயவிவரத்தை உருவாக்கவும்',
     how_step1_mistri_desc: 'பெயர், எண் மற்றும் அனுபவத்தை உள்ளிட்டு பதிவு செய்யவும்.',
-    how_step2_mistri_title: '2. ஆதார் சரிபார்ப்பை முடிக்கவும்',
+    how_step2_mistri_title: '2. KYC சரிபார்ப்பை முடிக்கவும்',
     how_step2_mistri_desc: 'டிஜிட்டல் அடையாள அட்டை பெற்று வாடிக்கையாளர் நம்பிக்கையைப் பெறுங்கள்.',
     how_step3_mistri_title: '3. நேரடி அழைப்புகளைப் பெறுங்கள்',
     how_step3_mistri_desc: 'கமிஷன் பிடித்தம் இல்லாமல் 100% வருமானத்தை நீங்களே வைத்திருங்கள்.',
@@ -813,8 +770,6 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     trust_card2_desc: 'உள்ளூர் போலீஸ் பதிவுகள் மூலம் வீட்டுப் பாதுகாப்பு உறுதி செய்யப்படுகிறது.',
     trust_card3_title: '0% கமிஷன்',
     trust_card3_desc: 'வாடிக்கையாளர் மற்றும் தொழிலாளி இடையே நேரடி தொடர்பு, கூடுதல் கட்டணம் இல்லை.',
-    trust_card4_title: '24/7 அவசர SOS உதவி',
-    trust_card4_desc: 'மின்சாரக் கோளாறு அல்லது குழாய் வெடிப்பு போன்ற அவசரநிலைகளுக்கு உடனடி உதவி.',
     cat_badge: 'கைவினைப் பிரிவுகள்',
     cat_title: 'பிரபலமான வீட்டு சேவைகள்',
     cat_subtitle: 'வயரிங், பிளம்பிங் முதல் சாதன பழுதுபார்ப்பு வரை.',
@@ -833,9 +788,6 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     footer_states_title: '{count} மாநிலங்கள்',
     footer_crafts_title: 'சேவைப் பிரிவுகள்',
     footer_safety_title: 'பாதுகாப்பு & தரம்',
-    sos_title: '24/7 அவசர தொழிலாளர் SOS',
-    sos_subtitle: '15 நிமிடத்தில் விரைவு உதவி',
-    sos_hotline: '1800-889-6478',
   },
   te: {
     nav_brand_subtitle: 'ప్రత్యక్ష ధృవీకరించబడిన డైరెక్టరీ',
@@ -846,7 +798,6 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     nav_register_mistri: 'మిస్త్రీ రిజిస్టర్',
     nav_about: 'మా గురించి',
     nav_contact: 'సంప్రదించండి',
-    nav_emergency_sos: '24/7 అత్యవసర SOS',
     nav_book_service: 'సర్వీస్ బుకింగ్',
     nav_search_placeholder: 'ఎలక్ట్రీషియన్, ప్లంబర్, కార్పెంటర్ శోధించండి...',
     hero_emergency_badge: '100% ఉచిత డైరెక్ట్ కాల్ • 0% కమిషన్',
@@ -889,7 +840,7 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     how_step3_desc: '0% కమిషన్‌తో నేరుగా మాట్లాడి సరైన ధరకు పని పూర్తి చేయండి.',
     how_step1_mistri_title: '1. ఉచిత ప్రొఫైల్‌ను సృష్టించండి',
     how_step1_mistri_desc: 'పేరు, ఫోన్ నంబర్ మరియు పని అనుభవాన్ని నమోదు చేయండి.',
-    how_step2_mistri_title: '2. ఆధార్ ధృవీకరణ పూర్తి చేయండి',
+    how_step2_mistri_title: '2. KYC ధృవీకరణ పూర్తి చేయండి',
     how_step2_mistri_desc: 'డిజిటల్ గుర్తింపు కార్డు పొంది కస్టమర్ల నమ్మకాన్ని పొందండి.',
     how_step3_mistri_title: '3. నేరుగా కస్టమర్ల కాల్స్ పొందండి',
     how_step3_mistri_desc: 'కమీషన్ కోత లేకుండా 100% సంపాదనను మీ వద్దే ఉంచుకోండి.',
@@ -916,8 +867,6 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     trust_card2_desc: 'గృహ భద్రతను నిర్ధారించడానికి స్థానిక పోలీసు రికార్డు తనిఖీ.',
     trust_card3_title: '0% ప్లాట్‌ఫారమ్ కమిషన్',
     trust_card3_desc: 'కస్టమర్ మరియు కార్మికుడి మధ్య ప్రత్యక్ష సంబంధం, అదనపు ఛార్జీలు లేవు.',
-    trust_card4_title: '24/7 అత్యవసర SOS లైన్',
-    trust_card4_desc: 'షార్ట్ సర్క్యూట్ లేదా పైప్ పగిలిన అత్యవసర పరిస్థితుల్లో తక్షణ సహాయం.',
     cat_badge: 'వృత్తి వర్గాలు',
     cat_title: 'ప్రసిద్ధ గృహ సేవలు',
     cat_subtitle: 'వైరింగ్, ప్లంబింగ్ నుండి ఉపకరణాల మరమ్మతుల వరకు.',
@@ -936,9 +885,6 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     footer_states_title: '{count} రాష్ట్రాలు',
     footer_crafts_title: 'సేవా వర్గాలు',
     footer_safety_title: 'భద్రత & ప్రమాణాలు',
-    sos_title: '24/7 అత్యవసర మేస్త్రీ SOS',
-    sos_subtitle: '15 నిమిషాల్లో తక్షణ సహాయం',
-    sos_hotline: '1800-889-6478',
   },
   kn: {
     nav_brand_subtitle: 'ನೇರ ಪರಿಶೀಲಿಸಿದ ಡೈರೆಕ್ಟರಿ',
@@ -949,7 +895,6 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     nav_register_mistri: 'ಮಿಸ್ತ್ರಿ ರಿಜಿಸ್ಟರ್',
     nav_about: 'ನಮ್ಮ ಬಗ್ಗೆ',
     nav_contact: 'ಸಂಪರ್ಕಿಸಿ',
-    nav_emergency_sos: '24/7 ತುರ್ತು SOS',
     nav_book_service: 'ಸೇವೆ ಬುಕಿಂಗ್',
     nav_search_placeholder: 'ಎಲೆಕ್ಟ್ರಿಷಿಯನ್, ಪ್ಲಂಬರ್, ಬಡಗಿ ಹುಡುಕಿ...',
     hero_emergency_badge: '100% ಉಚಿತ ನೇರ ಕರೆ • 0% ಕಮಿಷನ್',
@@ -992,7 +937,7 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     how_step3_desc: '0% ಕಮಿಷನ್‌ನಲ್ಲಿ ನೇರವಾಗಿ ಮಾತನಾಡಿ ನ್ಯಾಯಯುತ ಬೆಲೆಯಲ್ಲಿ ಕೆಲಸ ಮಾಡಿಸಿ.',
     how_step1_mistri_title: '1. ಉಚಿತ ಪ್ರೊಫೈಲ್ ರಚಿಸಿ',
     how_step1_mistri_desc: 'ಹೆಸರು, ಫೋನ್ ಮತ್ತು ಕೆಲಸದ ಅನುಭವ ನಮೂದಿಸಿ ನೋಂದಾಯಿಸಿ.',
-    how_step2_mistri_title: '2. ಆಧಾರ್ ಪರಿಶೀಲನೆ ಪೂರ್ಣಗೊಳಿಸಿ',
+    how_step2_mistri_title: '2. KYC ಪರಿಶೀಲನೆ ಪೂರ್ಣಗೊಳಿಸಿ',
     how_step2_mistri_desc: 'ಡಿಜಿಟಲ್ ಗುರುತಿನ ಚೀಟಿ ಪಡೆದು ಗ್ರಾಹಕರ ನಂಬಿಕೆಯನ್ನು ಹೆಚ್ಚಿಸಿ.',
     how_step3_mistri_title: '3. ನೇರ ಗ್ರಾಹಕರ ಕರೆಗಳನ್ನು ಪಡೆಯಿರಿ',
     how_step3_mistri_desc: 'ಯಾವುದೇ ಕಮಿಷನ್ ಕಡಿತವಿಲ್ಲದೆ 100% ಗಳಿಕೆಯನ್ನು ನಿಮ್ಮಲ್ಲೇ ಇರಿಸಿಕೊಳ್ಳಿ.',
@@ -1019,8 +964,6 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     trust_card2_desc: 'ಮನೆಯ ಸುರಕ್ಷತೆಗಾಗಿ ಸ್ಥಳೀಯ ಪೊಲೀಸ್ ದಾಖಲೆ ಪರಿಶೀಲನೆ.',
     trust_card3_title: '0% ಕಮಿಷನ್',
     trust_card3_desc: 'ಗ್ರಾಹಕ ಮತ್ತು ಕೆಲಸಗಾರನ ನಡುವೆ ನೇರ ಸಂಪರ್ಕ, ಯಾವುದೇ ಹೆಚ್ಚುವರಿ ಶುಲ್ಕವಿಲ್ಲ.',
-    trust_card4_title: '24/7 ತುರ್ತು SOS ಸಹಾಯ',
-    trust_card4_desc: 'ಶಾರ್ಟ್ ಸರ್ಕ್ಯೂಟ್ ಅಥವಾ ಪೈಪ್ ಒಡೆದಂತಹ ತುರ್ತು ಪರಿಸ್ಥಿತಿಯಲ್ಲಿ ತಕ್ಷಣದ ಸಹಾಯ.',
     cat_badge: 'ಕುಶಲಕರ್ಮಿ ವರ್ಗಗಳು',
     cat_title: 'ಜನಪ್ರಿಯ ಗೃಹ ಸೇವೆಗಳು',
     cat_subtitle: 'ವೈರಿಂಗ್, ಪ್ಲಂಬಿಂಗ್‌ನಿಂದ ಹಿಡಿದು ಉಪಕರಣ ದುರಸ್ತಿವರೆಗೆ.',
@@ -1039,8 +982,5 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     footer_states_title: '{count} ರಾಜ್ಯಗಳು',
     footer_crafts_title: 'ಸೇವಾ ವರ್ಗಗಳು',
     footer_safety_title: 'ಸುರಕ್ಷತೆ & ಮಾನದಂಡಗಳು',
-    sos_title: '24/7 ತುರ್ತು ಮೇಸ್ತ್ರಿ SOS',
-    sos_subtitle: '15 ನಿಮಿಷಗಳಲ್ಲಿ ತ್ವರಿತ ನೆರವು',
-    sos_hotline: '1800-889-6478',
   },
 };

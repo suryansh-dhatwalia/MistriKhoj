@@ -1,22 +1,108 @@
-import React, { useState } from 'react';
-import { 
-  X, 
-  MapPin, 
-  Phone, 
-  MessageSquare, 
-  Star, 
-  ShieldCheck, 
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import {
+  X,
+  MapPin,
+  Phone,
+  MessageSquare,
+  Star,
+  ShieldCheck,
   Award,
   CheckCircle2,
   Share2,
-  Check, 
+  Check,
   FileBadge,
-  Zap,
   Image as ImageIcon
 } from 'lucide-react';
 import { Technician } from '../types';
 import { DEFAULT_AVATAR_URI, avatarOrDefault } from '../lib/avatar';
 import { useLanguage } from '../context/LanguageContext';
+import { api } from '../lib/api';
+
+/** "MST-000123" -> 123, the raw Mistri id the backend rating endpoint expects. */
+const toMistriNumericId = (formattedId: string): number => Number(formattedId.replace(/^MST-/, ''));
+
+const ratedStorageKey = (mistriId: number) => `mistrikhoj_rated_mistri_${mistriId}`;
+
+/** Anonymous 1-5 star rating widget. No comments/reviews — just a star count,
+    submitted once per browser per Mistri (a soft, local-only guard; the real
+    anti-abuse limit is server-side, keyed by IP + Mistri). */
+const RateMistriBox: React.FC<{
+  mistriId: number;
+  onRated: (avgRating: number, ratingsCount: number) => void;
+}> = ({ mistriId, onRated }) => {
+  const { t } = useLanguage();
+  const [hovered, setHovered] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [alreadyRated, setAlreadyRated] = useState(false);
+
+  useEffect(() => {
+    setAlreadyRated(Boolean(localStorage.getItem(ratedStorageKey(mistriId))));
+    setError(null);
+    setHovered(0);
+  }, [mistriId]);
+
+  const submitRating = async (stars: number) => {
+    setSubmitting(true);
+    setError(null);
+    try {
+      const response = await api.post<{ success: boolean; data: { avgRating: number; ratingsCount: number } }>(
+        `/mistris/${mistriId}/rating`,
+        { rating: stars }
+      );
+      localStorage.setItem(ratedStorageKey(mistriId), String(stars));
+      setAlreadyRated(true);
+      onRated(response.data.data.avgRating, response.data.data.ratingsCount);
+    } catch (err: unknown) {
+      const message = axios.isAxiosError<{ message?: string }>(err)
+        ? err.response?.data?.message || 'Could not submit your rating. Please try again.'
+        : 'Could not submit your rating. Please try again.';
+      setError(message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (alreadyRated) {
+    return (
+      <div className="p-4 rounded-2xl bg-[#FAF7F2] border border-[#EAE3D6] text-center">
+        <div className="flex items-center justify-center gap-1 text-[#4C5943] text-xs font-semibold">
+          <CheckCircle2 className="w-4 h-4" />
+          <span>{t('modal_rating_thanks', 'Thanks — your rating was recorded!')}</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4 rounded-2xl bg-[#FAF7F2] border border-[#EAE3D6] text-center space-y-2">
+      <div className="text-xs font-bold text-[#161616] uppercase tracking-wider">
+        {t('modal_rate_title', 'Rate this Mistri')}
+      </div>
+      <div className="flex items-center justify-center gap-1" onMouseLeave={() => setHovered(0)}>
+        {[1, 2, 3, 4, 5].map((star) => (
+          <button
+            key={star}
+            type="button"
+            disabled={submitting}
+            onMouseEnter={() => setHovered(star)}
+            onClick={() => submitRating(star)}
+            aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
+            className="p-0.5 disabled:opacity-50 cursor-pointer"
+          >
+            <Star
+              className={`w-7 h-7 transition-colors ${
+                star <= hovered ? 'fill-[#FFB800] text-[#FFB800]' : 'fill-transparent text-[#161616]/30'
+              }`}
+            />
+          </button>
+        ))}
+      </div>
+      {error && <p className="text-[11px] text-red-600 font-medium">{error}</p>}
+    </div>
+  );
+};
 
 interface TechnicianModalProps {
   technician: Technician | null;
@@ -31,6 +117,13 @@ export const TechnicianModal: React.FC<TechnicianModalProps> = ({
 }) => {
   const { t } = useLanguage();
   const [copiedLink, setCopiedLink] = useState(false);
+  const [liveRating, setLiveRating] = useState({ rating: 0, reviewsCount: 0 });
+
+  useEffect(() => {
+    if (technician) {
+      setLiveRating({ rating: technician.rating, reviewsCount: technician.reviewsCount });
+    }
+  }, [technician]);
 
   if (!technician) return null;
 
@@ -103,11 +196,6 @@ export const TechnicianModal: React.FC<TechnicianModalProps> = ({
                   <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-white text-[#161616] border border-[#EAE3D6]">
                     {technician.badgeLevel}
                   </span>
-                  {technician.isEmergencyAvailable && (
-                    <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-white text-[#161616] border border-[#EAE3D6] flex items-center gap-1">
-                      <Zap className="w-3 h-3 text-[#4C5943]" /> {t('modal_emergency_avail', '24/7 SOS Available')}
-                    </span>
-                  )}
                 </div>
 
                 <h3 className="font-display text-2xl sm:text-3xl font-normal text-[#161616] mt-1.5">
@@ -123,8 +211,8 @@ export const TechnicianModal: React.FC<TechnicianModalProps> = ({
                 <div className="flex items-center gap-3 text-xs mt-3">
                   <div className="flex items-center gap-1 text-[#161616] font-semibold">
                     <Star className="w-4 h-4 fill-[#161616] text-[#161616]" />
-                    <span>{technician.reviewsCount > 0 ? technician.rating : 'New'}</span>
-                    <span className="text-[#161616]/50">({technician.reviewsCount} {t('dir_reviews', 'reviews')})</span>
+                    <span>{liveRating.reviewsCount > 0 ? liveRating.rating : 'New'}</span>
+                    <span className="text-[#161616]/50">({liveRating.reviewsCount} {t('dir_reviews', 'reviews')})</span>
                   </div>
                   <span className="text-[#EAE3D6]">|</span>
                   <span className="text-[#161616]/75 font-semibold">{technician.completedJobs > 0 ? `${technician.completedJobs}+` : 'New'} {t('modal_jobs', 'Jobs')}</span>
@@ -305,6 +393,12 @@ export const TechnicianModal: React.FC<TechnicianModalProps> = ({
                 <span>{t('modal_zero_comm_note', 'Zero commission • 100% direct payment to mistri')}</span>
               </div>
             </div>
+
+            {/* Rate this Mistri */}
+            <RateMistriBox
+              mistriId={toMistriNumericId(technician.id)}
+              onRated={(avgRating, ratingsCount) => setLiveRating({ rating: avgRating, reviewsCount: ratingsCount })}
+            />
 
           </div>
 

@@ -44,7 +44,6 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
       'Gold Master Ustad Verified Seal (2.5x more trust)',
       '#1 Top 3 Featured placement in state & city search',
       'Unlimited customer calls & direct WhatsApp connects',
-      'Emergency 24/7 SOS alert lead broadcasts',
       'Full digital visiting card & QR code link',
       'Priority customer dispute resolution & support',
       'Zero lead fees forever'

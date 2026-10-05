@@ -152,6 +152,23 @@ export const ApprovedMistrisPage: React.FC = () => {
     setMistris((prev) => prev.map((m) => (m.id === updated.id ? updated : m)));
   };
 
+  const handleToggleAvailability = async (mistri: Mistri) => {
+    const nextActive = mistri.isActive === false;
+    try {
+      const updated = await mistrisApi.setAvailability(mistri.id, nextActive);
+      setMistris((prev) => prev.map((m) => (m.id === updated.id ? updated : m)));
+      setToast({
+        open: true,
+        message: nextActive
+          ? `${mistri.fullName} is active and visible on the website again.`
+          : `${mistri.fullName} is inactive and hidden from the website.`,
+        severity: 'success',
+      });
+    } catch (err) {
+      setToast({ open: true, message: parseApiError(err).message, severity: 'error' });
+    }
+  };
+
   const handleViewClick = (mistri: Mistri) => {
     setSelectedMistri(mistri);
     setDetailsOpen(true);
@@ -186,11 +203,11 @@ export const ApprovedMistrisPage: React.FC = () => {
                 fontSize: '0.8125rem',
               }}
             >
-              {total} Live
+              {total} Approved
             </Box>
           </Box>
           <Typography variant="body2" sx={{ color: brandColors.textSecondary, mt: 0.5 }}>
-            Manage verified tradespersons who are currently published on the public MistriKhoj portal.
+            Manage verified tradespersons on the MistriKhoj portal. Switch a Mistri to Inactive to hide them from the website temporarily.
           </Typography>
         </Box>
 
@@ -287,6 +304,7 @@ export const ApprovedMistrisPage: React.FC = () => {
               onPageChange={setPage}
               onView={handleViewClick}
               onEdit={handleEditClick}
+              onToggleAvailability={handleToggleAvailability}
               onRejectOrDelete={handleDeleteClick}
               isPendingTable={false}
             />
@@ -300,6 +318,7 @@ export const ApprovedMistrisPage: React.FC = () => {
               onPageSizeChange={setPageSize}
               onView={handleViewClick}
               onEdit={handleEditClick}
+              onToggleAvailability={handleToggleAvailability}
               onRejectOrDelete={handleDeleteClick}
               isPendingTable={false}
             />

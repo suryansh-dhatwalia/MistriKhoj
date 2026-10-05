@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { optionalPhoneSchema, optionalText, phoneSchema } from "./shared.js";
+import { citySchema, optionalPhoneSchema, optionalText, phoneSchema } from "./shared.js";
 
 const optionalPincodeSchema = z.preprocess(
   (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
@@ -47,12 +47,16 @@ export const adminMistriQuerySchema = z.object({
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
 });
 
+export const mistriAvailabilitySchema = z.object({
+  isActive: z.boolean(),
+});
+
 export const adminMistriUpdateSchema = z.object({
   fullName: z.string().trim().min(2).max(120),
   primaryPhone: phoneSchema,
   alternatePhone: optionalPhoneSchema.nullable(),
   state: z.string().trim().min(2).max(100),
-  city: z.string().trim().min(2).max(100),
+  city: citySchema,
   category: z.string().trim().min(2).max(120),
   qualification: z.string().trim().min(2).max(255),
   address: z.string().trim().min(5).max(2_000),

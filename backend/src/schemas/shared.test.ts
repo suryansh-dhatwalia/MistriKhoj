@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { httpUrlSchema, imageInputSchema, mediaInputSchema, phoneSchema } from "./shared.js";
+import { httpUrlSchema, imageInputSchema, mediaInputSchema, phoneSchema, videoInputSchema } from "./shared.js";
 
 test("normalises valid Indian phone numbers", () => {
   assert.equal(phoneSchema.parse("+91 98765 43210"), "9876543210");
@@ -18,4 +18,10 @@ test("accepts supported image and video uploads", () => {
   assert.equal(imageInputSchema.safeParse("data:image/png;base64,iVBORw0KGgo=").success, true);
   assert.equal(mediaInputSchema.safeParse("data:video/mp4;base64,AAAA").success, true);
   assert.equal(mediaInputSchema.safeParse("data:text/html;base64,AAAA").success, false);
+});
+
+test("video-only field accepts a video upload but rejects an image", () => {
+  assert.equal(videoInputSchema.safeParse("data:video/mp4;base64,AAAA").success, true);
+  assert.equal(videoInputSchema.safeParse("https://example.com/clip.mp4").success, true);
+  assert.equal(videoInputSchema.safeParse("data:image/png;base64,iVBORw0KGgo=").success, false);
 });

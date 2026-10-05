@@ -60,6 +60,16 @@
   background-size: 24px 24px;
 }
 
+/* Slow, continuous horizontal scroll for the Mistri News strip */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

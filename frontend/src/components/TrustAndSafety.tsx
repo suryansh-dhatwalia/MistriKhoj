@@ -1,10 +1,9 @@
 import React from 'react';
-import { 
-  ShieldCheck, 
+import {
+  ShieldCheck,
   CheckCircle2,
   PhoneCall,
   UserCheck,
-  Zap,
   Tag,
   Award
 } from 'lucide-react';
@@ -88,8 +87,8 @@ export const TrustAndSafety: React.FC = () => {
             </div>
           </div>
 
-          {/* Card 3: 0% Platform Commission (Bottom Left - 5 cols) */}
-          <div className="lg:col-span-5 p-6 sm:p-8 rounded-2xl bg-amber-50 border-2 border-amber-300 flex flex-col justify-between shadow-sm">
+          {/* Card 3: 0% Platform Commission (Bottom - full width) */}
+          <div className="lg:col-span-12 p-6 sm:p-8 rounded-2xl bg-amber-50 border-2 border-amber-300 flex flex-col justify-between shadow-sm">
             <div>
               <div className="w-12 h-12 rounded-xl bg-black text-[#FFB800] flex items-center justify-center mb-6">
                 <Tag className="w-6 h-6 stroke-[2.5]" />
@@ -108,39 +107,6 @@ export const TrustAndSafety: React.FC = () => {
             <div className="mt-8 pt-4 border-t border-amber-200 flex items-center gap-2 text-xs font-bold text-gray-900">
               <CheckCircle2 className="w-4 h-4 text-black" />
               <span>{t('trust_100_payment', '100% of payment goes to the craftsman')}</span>
-            </div>
-          </div>
-
-          {/* Card 4: 24/7 SOS Emergency (Bottom Right - 7 cols) */}
-          <div className="lg:col-span-7 p-6 sm:p-8 rounded-2xl bg-white border-2 border-black flex flex-col justify-between shadow-sm relative overflow-hidden">
-            <div className="flex items-start justify-between">
-              <div>
-                <div className="w-12 h-12 rounded-xl bg-red-100 text-red-600 flex items-center justify-center mb-6">
-                  <Zap className="w-6 h-6 stroke-[2.5]" />
-                </div>
-                <span className="text-[10px] font-black text-red-600 uppercase tracking-widest block mb-1">
-                  {t('trust_immediate_dispatch', 'Immediate Dispatch')}
-                </span>
-                <h3 className="font-display text-xl sm:text-2xl font-black tracking-tight text-black mb-3">
-                  {t('trust_card4_title', '24/7 Emergency SOS Line')}
-                </h3>
-                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed max-w-md">
-                  {t('trust_card4_desc', 'Immediate dispatch for short circuits, water pipe bursts, or door lock emergencies.')}
-                </p>
-              </div>
-
-              <div className="hidden sm:flex flex-col items-center justify-center p-3 rounded-xl bg-gray-100 border border-gray-200">
-                <span className="font-heading-impact text-2xl font-black text-red-600">15 min</span>
-                <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">{t('trust_avg_response', 'Avg Response')}</span>
-              </div>
-            </div>
-
-            <div className="mt-8 pt-4 border-t border-gray-100 flex items-center justify-between text-xs font-bold text-gray-700">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-red-600" />
-                <span>{t('trust_round_the_clock', 'Round-the-clock technician availability')}</span>
-              </div>
-              <span className="text-[11px] text-gray-400">{t('trust_emergency_desk', 'Emergency Desk')}</span>
             </div>
           </div>
 

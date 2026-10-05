@@ -17,6 +17,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
 import VerifiedIcon from '@mui/icons-material/Verified';
+import StarIcon from '@mui/icons-material/Star';
 import PersonIcon from '@mui/icons-material/Person';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -33,6 +34,7 @@ import CampaignIcon from '@mui/icons-material/Campaign';
 import OndemandVideoIcon from '@mui/icons-material/OndemandVideo';
 import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
 import FormatQuoteIcon from '@mui/icons-material/FormatQuote';
+import ArticleIcon from '@mui/icons-material/Article';
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import InsightsIcon from '@mui/icons-material/Insights';
 import HistoryIcon from '@mui/icons-material/History';
@@ -87,6 +89,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             badge: pendingCount && pendingCount > 0 ? pendingCount : undefined,
           },
           { label: 'Approved Mistris', path: '/mistris/approved', icon: <VerifiedIcon /> },
+          { label: 'Ratings', path: '/mistris/ratings', icon: <StarIcon /> },
         ],
       },
       {
@@ -114,6 +117,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         icon: <FormatQuoteIcon />,
         children: [
           { label: 'Testimonials', path: '/content/testimonials', icon: <FormatQuoteIcon /> },
+          { label: 'Mistri News', path: '/content/mistri-news', icon: <ArticleIcon /> },
           { label: 'Plans', path: '/content/plans', icon: <WorkspacePremiumIcon /> },
         ],
       },
@@ -224,27 +228,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, overflow: 'hidden' }}>
           <Box
-            sx={{
-              width: 32,
-              height: 32,
-              borderRadius: '2px',
-              backgroundColor: brandColors.mustard,
-              color: brandColors.black,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 800,
-              fontSize: '0.875rem',
-              flexShrink: 0,
-            }}
-          >
-            MK
-          </Box>
-          {!collapsed && (
-            <Typography sx={{ color: brandColors.white, fontWeight: 700, fontSize: '1.25rem', letterSpacing: '-0.02em' }}>
-              MistriKhoj
-            </Typography>
-          )}
+            component="img"
+            src="/logo.png"
+            alt="MistriKhoj"
+            sx={{ height: collapsed ? 28 : 44, width: 'auto', maxWidth: '100%', objectFit: 'contain' }}
+          />
         </Box>
         {!collapsed && (
           <Box sx={{ display: { xs: 'none', md: 'block' } }}>

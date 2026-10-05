@@ -17,7 +17,10 @@ import { useContent } from '../context/ContentContext';
 
 export const ContactSection: React.FC = () => {
   const { t } = useLanguage();
-  const { states: SUPPORTED_STATES } = useContent();
+  const { states: SUPPORTED_STATES, settings } = useContent();
+  const whatsappNumber = String(settings.whatsapp_number ?? '+918453246244');
+  const whatsappDigits = whatsappNumber.replace(/\D/g, '');
+  const supportEmail = String(settings.support_email ?? 'support@mistrikhoj.in');
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -51,16 +54,18 @@ export const ContactSection: React.FC = () => {
     {
       q: t('faq_4_q', 'How can a technician or contractor register on MistriKhoj?'),
       a: t('faq_4_a', 'Simply click the "Register as a Mistri" button at the top, fill in your trade category, phone number, qualification, experience, and upload your profile photo and work gallery. Registration offers a 30-Day Free Starter Trial!')
-    },
-    {
-      q: t('faq_5_q', 'What should I do in an emergency electrical or plumbing breakdown?'),
-      a: t('faq_5_a', 'Use our 24/7 Emergency SOS toggle in the search directory to find immediately available on-call technicians who can reach your home in 15-30 minutes.')
     }
   ];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !phone) return;
+
+    const lines = [`New inquiry from ${name}`, `Phone: ${phone}`, `State: ${state}`];
+    if (message.trim()) lines.push(`Message: ${message.trim()}`);
+    const text = encodeURIComponent(lines.join('\n'));
+    window.open(`https://wa.me/${whatsappDigits}?text=${text}`, '_blank');
+
     setFormSubmitted(true);
   };
 
@@ -92,7 +97,7 @@ export const ContactSection: React.FC = () => {
             {/* Quick Contact Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <a
-                href="tel:18008896478"
+                href="tel:+918453246244"
                 className="p-4 rounded-xl bg-white border-2 border-gray-200 hover:border-black transition-all flex items-center gap-3 group shadow-sm"
               >
                 <div className="w-10 h-10 rounded-xl bg-black text-[#FFB800] flex items-center justify-center shrink-0">
@@ -100,12 +105,12 @@ export const ContactSection: React.FC = () => {
                 </div>
                 <div>
                   <div className="text-[11px] text-gray-500 font-semibold">{t('contact_toll_free', 'Toll-Free Helpline')}</div>
-                  <div className="text-xs font-black text-black">1800-889-MISTRI</div>
+                  <div className="text-xs font-black text-black">+91 84532 46244</div>
                 </div>
               </a>
 
               <a
-                href="https://wa.me/919876543210?text=Hello%20MistriKhoj,%20I%20need%20assistance%20finding%20a%20technician"
+                href={`https://wa.me/${whatsappDigits}?text=Hello%20MistriKhoj,%20I%20need%20assistance%20finding%20a%20technician`}
                 target="_blank"
                 rel="noreferrer"
                 className="p-4 rounded-xl bg-[#25D366]/10 border-2 border-[#25D366]/40 hover:border-[#25D366] transition-all flex items-center gap-3 group shadow-sm"
@@ -115,7 +120,20 @@ export const ContactSection: React.FC = () => {
                 </div>
                 <div>
                   <div className="text-[11px] text-emerald-800 font-bold">{t('contact_whatsapp', 'WhatsApp Support')}</div>
-                  <div className="text-xs font-black text-emerald-900">+91 98765 43210</div>
+                  <div className="text-xs font-black text-emerald-900">{whatsappNumber}</div>
+                </div>
+              </a>
+
+              <a
+                href={`mailto:${supportEmail}`}
+                className="sm:col-span-2 p-4 rounded-xl bg-white border-2 border-gray-200 hover:border-black transition-all flex items-center gap-3 group shadow-sm"
+              >
+                <div className="w-10 h-10 rounded-xl bg-black text-[#FFB800] flex items-center justify-center shrink-0">
+                  <Mail className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-[11px] text-gray-500 font-semibold">{t('contact_email', 'Email Support')}</div>
+                  <div className="text-xs font-black text-black break-all">{supportEmail}</div>
                 </div>
               </a>
             </div>
@@ -130,9 +148,9 @@ export const ContactSection: React.FC = () => {
               {formSubmitted ? (
                 <div className="p-6 rounded-xl bg-amber-50 border border-amber-200 text-center space-y-2">
                   <CheckCircle2 className="w-10 h-10 text-emerald-600 mx-auto" />
-                  <div className="text-base font-black text-black">{t('contact_success_title', 'Message Received!')}</div>
+                  <div className="text-base font-black text-black">{t('contact_success_title', 'Opening WhatsApp…')}</div>
                   <p className="text-xs text-gray-700">
-                    {t('contact_success_desc', 'Thank you. Our regional coordinator will contact you shortly.')}
+                    {t('contact_success_desc', "We've pre-filled your details on WhatsApp. Hit send there and our regional coordinator will reply shortly.")}
                   </p>
                   <button
                     onClick={() => {

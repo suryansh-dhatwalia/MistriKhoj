@@ -1,23 +1,20 @@
-import React, { useState, useMemo } from 'react';
-import { 
-  Search, 
-  MapPin, 
-  Wrench, 
-  Phone, 
-  MessageSquare, 
-  Star, 
-  ShieldCheck, 
-  Award, 
-  ChevronRight, 
-  Zap,
-  RotateCcw,
-  CheckCircle2,
-  HardHat
+import React, { useState, useMemo, useEffect } from 'react';
+import {
+  MapPin,
+  Wrench,
+  Phone,
+  MessageSquare,
+  Star,
+  ShieldCheck,
+  Award,
+  ChevronRight,
+  RotateCcw
 } from 'lucide-react';
-import { Technician, SupportedState } from '../types';
+import { DirectorySortOption, Technician, SupportedState } from '../types';
 import { DEFAULT_AVATAR_URI } from '../lib/avatar';
 import { useLanguage } from '../context/LanguageContext';
-import { useContent } from '../context/ContentContext';
+
+const DIRECTORY_PAGE_SIZE = 18;
 
 interface TechnicianDirectoryProps {
   technicians: Technician[];
@@ -32,6 +29,12 @@ interface TechnicianDirectoryProps {
   setSelectedCategory: (cat: string) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
+  minExperience: number;
+  setMinExperience: (years: number) => void;
+  onlyGoldPartner: boolean;
+  setOnlyGoldPartner: (value: boolean) => void;
+  sortBy: DirectorySortOption;
+  setSortBy: (value: DirectorySortOption) => void;
   onSelectTechnician: (tech: Technician) => void;
   onDirectContact: (tech: Technician, method: 'phone' | 'whatsapp') => void;
 }
@@ -49,17 +52,27 @@ export const TechnicianDirectory: React.FC<TechnicianDirectoryProps> = ({
   setSelectedCategory,
   searchQuery,
   setSearchQuery,
+  minExperience,
+  setMinExperience,
+  onlyGoldPartner,
+  setOnlyGoldPartner,
+  sortBy,
+  setSortBy,
   onSelectTechnician,
   onDirectContact
 }) => {
   const { t } = useLanguage();
-  const { states: SUPPORTED_STATES, categories: SERVICE_CATEGORIES, getCitiesForState } = useContent();
-  const [minExperience, setMinExperience] = useState<number>(0);
-  const [onlyEmergency, setOnlyEmergency] = useState<boolean>(false);
-  const [onlyGoldPartner, setOnlyGoldPartner] = useState<boolean>(false);
-  const [sortBy, setSortBy] = useState<'rating' | 'experience' | 'jobs' | 'price'>('rating');
+  const [visibleCount, setVisibleCount] = useState<number>(DIRECTORY_PAGE_SIZE);
 
-  const availableCities = selectedState !== 'All' ? getCitiesForState(selectedState) : [];
+  // A random order per Mistri, re-rolled only when the fetched list itself changes
+  // (a fresh page load, a retry, a new registration) — not on every filter/search
+  // keystroke, so "Shuffled" gives every non-paid Mistri a fair shot at the top on
+  // each visit without the list jumping around while someone is browsing it.
+  const shuffleWeights = useMemo(() => {
+    const weights = new Map<string, number>();
+    technicians.forEach((tech) => weights.set(tech.id, Math.random()));
+    return weights;
+  }, [technicians]);
 
   const filteredTechnicians = useMemo(() => {
     return technicians
@@ -72,8 +85,6 @@ export const TechnicianDirectory: React.FC<TechnicianDirectoryProps> = ({
         if (selectedCategory !== 'All' && !tech.category.toLowerCase().includes(selectedCategory.toLowerCase())) return false;
         // Experience check
         if (tech.experienceYears < minExperience) return false;
-        // Emergency check
-        if (onlyEmergency && !tech.isEmergencyAvailable) return false;
         // Gold / Platinum Partner filter
         if (onlyGoldPartner && tech.badgeLevel !== 'Gold Master' && tech.badgeLevel !== 'Platinum Partner') return false;
         // Search query
@@ -96,13 +107,23 @@ export const TechnicianDirectory: React.FC<TechnicianDirectoryProps> = ({
         // Paid "Top Listed" Mistris are always pinned above the rest of the
         // current result set; the chosen Sort By only orders within each group.
         if (a.isFeatured !== b.isFeatured) return a.isFeatured ? -1 : 1;
+        if (sortBy === 'random') return (shuffleWeights.get(a.id) ?? 0) - (shuffleWeights.get(b.id) ?? 0);
         if (sortBy === 'rating') return b.rating - a.rating;
         if (sortBy === 'experience') return b.experienceYears - a.experienceYears;
         if (sortBy === 'jobs') return b.completedJobs - a.completedJobs;
         if (sortBy === 'price') return a.startingPrice - b.startingPrice;
         return 0;
       });
-  }, [technicians, selectedState, selectedCity, selectedCategory, minExperience, onlyEmergency, onlyGoldPartner, searchQuery, sortBy]);
+  }, [technicians, selectedState, selectedCity, selectedCategory, minExperience, onlyGoldPartner, searchQuery, sortBy, shuffleWeights]);
+
+  // Collapse back to the first page whenever the result set changes underneath it,
+  // so "Show More" always starts fresh instead of leaving a stale, too-long list.
+  useEffect(() => {
+    setVisibleCount(DIRECTORY_PAGE_SIZE);
+  }, [selectedState, selectedCity, selectedCategory, minExperience, onlyGoldPartner, searchQuery, sortBy]);
+
+  const visibleTechnicians = filteredTechnicians.slice(0, visibleCount);
+  const hasMoreTechnicians = visibleCount < filteredTechnicians.length;
 
   const handleResetFilters = () => {
     setSelectedState('All');
@@ -110,9 +131,8 @@ export const TechnicianDirectory: React.FC<TechnicianDirectoryProps> = ({
     setSelectedCategory('All');
     setSearchQuery('');
     setMinExperience(0);
-    setOnlyEmergency(false);
     setOnlyGoldPartner(false);
-    setSortBy('rating');
+    setSortBy('random');
   };
 
   return (
@@ -151,7 +171,7 @@ export const TechnicianDirectory: React.FC<TechnicianDirectoryProps> = ({
                 </p>
               )}
             </div>
-            {(selectedState !== 'All' || selectedCategory !== 'All' || searchQuery || minExperience > 0 || onlyEmergency) && (
+            {(selectedState !== 'All' || selectedCategory !== 'All' || searchQuery || minExperience > 0) && (
               <button
                 onClick={handleResetFilters}
                 className="px-3.5 py-2 rounded-xl bg-gray-200 hover:bg-gray-300 text-xs font-bold text-black flex items-center gap-1.5 transition-colors cursor-pointer"
@@ -162,147 +182,6 @@ export const TechnicianDirectory: React.FC<TechnicianDirectoryProps> = ({
               </button>
             )}
           </div>
-        </div>
-
-        {/* Filter Controls Bar */}
-        <div className="mb-8 p-5 rounded-2xl bg-white border-2 border-gray-200 shadow-sm space-y-4">
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
-            
-            {/* State Filter */}
-            <div>
-              <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">
-                {t('dir_state_filter', 'State')}
-              </label>
-              <select
-                value={selectedState}
-                onChange={(e) => {
-                  setSelectedState(e.target.value as SupportedState | 'All');
-                  setSelectedCity('All');
-                }}
-                className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:border-black focus:outline-none"
-              >
-                <option value="All">{t('hero_all_states', 'All {count} States', { count: SUPPORTED_STATES.length })}</option>
-                {SUPPORTED_STATES.map((st) => (
-                  <option key={st.name} value={st.name}>
-                    {st.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* City Filter */}
-            <div>
-              <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">
-                {t('dir_city_filter', 'City')}
-              </label>
-              <select
-                value={selectedCity}
-                onChange={(e) => setSelectedCity(e.target.value)}
-                disabled={selectedState === 'All'}
-                className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:border-black focus:outline-none disabled:opacity-50"
-              >
-                <option value="All">
-                  {selectedState === 'All' ? t('hero_all_cities', 'All Cities') : `All in ${selectedState}`}
-                </option>
-                {availableCities.map((city) => (
-                  <option key={city} value={city}>
-                    {city}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Category Filter */}
-            <div>
-              <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">
-                {t('dir_cat_filter', 'Category')}
-              </label>
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:border-black focus:outline-none"
-              >
-                <option value="All">{t('hero_all_categories', 'All Categories')}</option>
-                {SERVICE_CATEGORIES.map((cat) => (
-                  <option key={cat.id} value={cat.name}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Experience Filter */}
-            <div>
-              <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">
-                {t('dir_exp_years', 'Experience')}
-              </label>
-              <select
-                value={minExperience}
-                onChange={(e) => setMinExperience(Number(e.target.value))}
-                className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:border-black focus:outline-none"
-              >
-                <option value={0}>{t('dir_all_exp', 'Any Experience')}</option>
-                <option value={5}>5+ {t('dir_exp_years', 'Years')}</option>
-                <option value={10}>10+ {t('dir_exp_years', 'Years')}</option>
-                <option value={15}>15+ {t('dir_exp_years', 'Years')}</option>
-              </select>
-            </div>
-
-            {/* Sort Order */}
-            <div>
-              <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">
-                {t('dir_sort_by', 'Sort By')}
-              </label>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
-                className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:border-black focus:outline-none"
-              >
-                <option value="rating">{t('dir_sort_rating', 'Highest Rating (★ 4.9+)')}</option>
-                <option value="experience">{t('dir_sort_experience', 'Most Experienced')}</option>
-                <option value="jobs">{t('dir_sort_jobs', 'Most Jobs Completed')}</option>
-                <option value="price">{t('dir_sort_price', 'Starting Rate (Lowest)')}</option>
-              </select>
-            </div>
-
-          </div>
-
-          {/* Secondary Quick Toggles */}
-          <div className="flex flex-wrap items-center justify-between pt-3 border-t border-gray-100 gap-3 text-xs">
-            <div className="flex flex-wrap items-center gap-2">
-              <label className="inline-flex items-center gap-2 cursor-pointer select-none bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200 hover:border-black transition-colors">
-                <input
-                  type="checkbox"
-                  checked={onlyEmergency}
-                  onChange={(e) => setOnlyEmergency(e.target.checked)}
-                  className="rounded border-gray-300 text-black focus:ring-0"
-                />
-                <span className="flex items-center gap-1 font-bold text-gray-900">
-                  <Zap className="w-3.5 h-3.5 text-red-600" />
-                  {t('dir_filter_emergency', '24/7 Emergency Available Only')}
-                </span>
-              </label>
-
-              <label className="inline-flex items-center gap-2 cursor-pointer select-none bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200 hover:border-black transition-colors">
-                <input
-                  type="checkbox"
-                  checked={onlyGoldPartner}
-                  onChange={(e) => setOnlyGoldPartner(e.target.checked)}
-                  className="rounded border-gray-300 text-black focus:ring-0"
-                />
-                <span className="flex items-center gap-1 font-bold text-gray-900">
-                  <Award className="w-3.5 h-3.5 text-[#FFB800]" />
-                  {t('dir_filter_gold', 'Gold Master & Platinum Only')}
-                </span>
-              </label>
-            </div>
-
-            <div className="text-[11px] text-gray-500 font-semibold">
-              {t('dir_zero_comm', '0% commission')} • {t('trust_direct_tag', 'Direct Connect')}
-            </div>
-          </div>
-
         </div>
 
         {/* Technician Cards Grid */}
@@ -339,7 +218,7 @@ export const TechnicianDirectory: React.FC<TechnicianDirectoryProps> = ({
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredTechnicians.map((tech) => (
+            {visibleTechnicians.map((tech) => (
               <div
                 key={tech.id}
                 className={`group rounded-2xl bg-white border-2 transition-all duration-200 shadow-sm hover:shadow-xl flex flex-col justify-between overflow-hidden ${
@@ -387,12 +266,6 @@ export const TechnicianDirectory: React.FC<TechnicianDirectoryProps> = ({
                         }`}>
                           {tech.badgeLevel}
                         </span>
-
-                        {tech.isEmergencyAvailable && (
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-red-100 text-red-700 flex items-center gap-0.5">
-                            <Zap className="w-2.5 h-2.5 text-red-600" /> SOS
-                          </span>
-                        )}
                       </div>
 
                       <h3 className="text-base font-extrabold text-[#111827] mt-1.5 truncate">
@@ -505,6 +378,23 @@ export const TechnicianDirectory: React.FC<TechnicianDirectoryProps> = ({
 
               </div>
             ))}
+          </div>
+        )}
+
+        {hasMoreTechnicians && (
+          <div className="mt-10 flex flex-col items-center gap-2">
+            <button
+              onClick={() => setVisibleCount((prev) => prev + DIRECTORY_PAGE_SIZE)}
+              className="px-8 py-3 rounded-xl bg-[#FFB800] text-black text-sm font-bold hover:bg-[#F59E0B] transition-colors shadow-sm cursor-pointer"
+            >
+              {t('dir_show_more', 'Show More Mistris')}
+            </button>
+            <p className="text-xs text-gray-500 font-medium">
+              {t('dir_showing_count', 'Showing {shown} of {total}', {
+                shown: visibleTechnicians.length,
+                total: filteredTechnicians.length,
+              })}
+            </p>
           </div>
         )}
 

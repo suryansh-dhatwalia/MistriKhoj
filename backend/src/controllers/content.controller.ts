@@ -53,6 +53,10 @@ export async function getCategories(
   next: NextFunction,
 ): Promise<void> {
   try {
+    const inactive = await prisma.mistriAvailability.findMany({
+      where: { status: "INACTIVE" },
+      select: { mistriId: true },
+    });
     const [categories, grouped] = await Promise.all([
       prisma.category.findMany({
         where: { status: "ACTIVE" },
@@ -60,7 +64,7 @@ export async function getCategories(
       }),
       prisma.mistri.groupBy({
         by: ["category"],
-        where: { status: "APPROVED" },
+        where: { status: "APPROVED", id: { notIn: inactive.map((row) => row.mistriId) } },
         _count: { _all: true },
       }),
     ]);
@@ -177,6 +181,31 @@ export async function getTestimonials(
         comment: item.comment,
         date: item.displayDate,
         avatarUrl: item.avatarUrl ?? "",
+        videoUrl: item.videoUrl ?? "",
+      })),
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/** GET /api/content/mistri-news — the scrolling news strip shown before the home ad banners. */
+export async function getMistriNews(
+  _request: Request,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const news = await prisma.mistriNews.findMany({
+      where: { status: "ACTIVE" },
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+    });
+    sendCached(response, {
+      success: true,
+      data: news.map((item) => ({
+        id: String(item.id),
+        message: item.message,
+        linkUrl: item.linkUrl,
       })),
     });
   } catch (error) {

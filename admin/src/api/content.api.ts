@@ -7,6 +7,8 @@ import {
   CategoryItem,
   CityItem,
   ListQuery,
+  MistriNewsItem,
+  MistriRatingItem,
   PlanItem,
   ReferralItem,
   ReferralLeadCount,
@@ -58,6 +60,8 @@ export const testimonialsApi = createResourceApi<TestimonialItem>('/admin/testim
 export const plansApi = createResourceApi<PlanItem>('/admin/plans');
 export const referralsApi = createResourceApi<ReferralItem>('/admin/referrals');
 export const adRequestsApi = createResourceApi<AdRequestItem>('/admin/ad-requests');
+export const mistriRatingsApi = createResourceApi<MistriRatingItem>('/admin/mistri-ratings');
+export const mistriNewsApi = createResourceApi<MistriNewsItem>('/admin/mistri-news');
 
 export const referralExtrasApi = {
   leadCounts: async (): Promise<ReferralLeadCount[]> => {
@@ -91,6 +95,21 @@ export const auditApi = {
   }): Promise<AuditLogResponse> => {
     const response = await api.get<AuditLogResponse & { success: boolean }>('/admin/audit-logs', { params });
     return response.data;
+  },
+};
+
+export const exportApi = {
+  /** Downloads every Mistri, ad and ad request as an .xlsx file. */
+  downloadData: async (): Promise<void> => {
+    const response = await api.get<Blob>('/admin/export/data', { responseType: 'blob', timeout: 120000 });
+    const url = URL.createObjectURL(response.data);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `mistrikhoj-data-${new Date().toISOString().slice(0, 10)}.xlsx`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
   },
 };
 

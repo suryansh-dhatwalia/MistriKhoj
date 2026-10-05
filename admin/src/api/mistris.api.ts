@@ -36,6 +36,18 @@ export const mistrisApi = {
   },
 
   /**
+   * Show or hide an approved Mistri on the public site
+   * PATCH /admin/mistris/:id/availability
+   */
+  setAvailability: async (id: number, isActive: boolean): Promise<Mistri> => {
+    const response = await api.patch<{ success: boolean; data: Mistri }>(
+      `/admin/mistris/${id}/availability`,
+      { isActive }
+    );
+    return response.data.data;
+  },
+
+  /**
    * Approve a pending Mistri registration
    * PATCH /admin/mistris/:id/approve
    */

@@ -27,10 +27,11 @@ import type {
   SupportedState,
   Technician
 } from '../types';
-import { REGISTRATION_PLANS, PAID_PLAN_PRICE_INR } from '../data/registrationPlans';
+import { getRegistrationPlans, resolvePaidPlanPrice } from '../data/registrationPlans';
 import { DEFAULT_AVATAR_URI, avatarOrDefault } from '../lib/avatar';
 import { useLanguage } from '../context/LanguageContext';
 import { useContent } from '../context/ContentContext';
+import { INDIA_STATES } from '../data/indiaStates';
 
 const formatSlotDate = (iso: string): string => {
   const date = new Date(iso);
@@ -73,10 +74,12 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
   onBackToHome
 }) => {
   const { t } = useLanguage();
-  const { states: SUPPORTED_STATES, categories: SERVICE_CATEGORIES, getCitiesForState } = useContent();
+  const { categories: SERVICE_CATEGORIES, getCitiesForState, settings } = useContent();
+  const paidPlanPrice = resolvePaidPlanPrice(settings);
+  const registrationPlans = getRegistrationPlans(paidPlanPrice);
   const [formData, setFormData] = useState<MistriRegistrationFormData>({
-    state: 'Assam',
-    city: 'Guwahati',
+    state: '',
+    city: '',
     category: 'Electrician',
     fullName: '',
     primaryPhone: '',
@@ -276,13 +279,14 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
     }
 
     if (!formData.state) newErrors.state = 'Please select a state';
-    if (!formData.city || formData.city === 'All') newErrors.city = 'Please select a city';
+    if (!formData.city.trim() || formData.city === 'All') newErrors.city = 'Please select a city';
     if (!formData.category) newErrors.category = 'Please select a primary category';
     if (!formData.address.trim()) newErrors.address = 'Workshop or home address is required';
     if (formData.pincode.trim() && !/^\d{6}$/.test(formData.pincode.trim())) {
       newErrors.pincode = 'Enter a valid 6-digit PIN code';
     }
     if (formData.servicesOffered.length === 0) newErrors.servicesOffered = 'Select or add at least one service offered';
+    if (!formData.profilePhoto) newErrors.profilePhoto = 'Profile photo is required';
     if (!formData.acceptedTerms) newErrors.acceptedTerms = 'You must accept the terms and safety policies';
 
     setErrors(newErrors);
@@ -330,7 +334,6 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
         reviewsCount: 0,
         isVerified: false,
         badgeLevel: 'Standard Verified',
-        isEmergencyAvailable: false,
         startingPrice: 299,
         completedJobs: 0,
         policeVerified: false,
@@ -418,7 +421,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                 <p className="text-xs sm:text-sm text-amber-800 mt-3 max-w-lg mx-auto font-bold bg-[#FFF9EC] border border-[#FFB800]/50 rounded-xl px-4 py-2.5">
                   {t(
                     'reg_success_paid',
-                    `Your ₹${PAID_PLAN_PRICE_INR} / year Paid top listing is reserved. It goes live at the top of search for ${registeredMistri.city} · ${registeredMistri.category} once an admin approves your profile. Our team will contact you for payment.`
+                    `Your ₹${paidPlanPrice} / year Paid top listing is reserved. It goes live at the top of search for ${registeredMistri.city} · ${registeredMistri.category} once an admin approves your profile. Our team will contact you for payment.`
                   )}
                 </p>
               )}
@@ -431,9 +434,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
               {/* ID Card Top Header */}
               <div className="flex items-center justify-between pb-4 border-b border-gray-800">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-[#FFB800] text-black flex items-center justify-center font-black text-xs">
-                    MK
-                  </div>
+                  <img src="/logo.png" alt="MistriKhoj" className="h-10 w-auto" />
                   <div>
                     <div className="text-xs font-black text-white">MISTRIKHOJ REGISTRATION</div>
                     <div className="text-[10px] text-gray-400 font-semibold">Application received</div>
@@ -561,25 +562,25 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                 {/* State Dropdown */}
                 <div>
                   <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                    {t('reg_state_label', 'State ({count} States Supported) *', { count: SUPPORTED_STATES.length })}
+                    {t('reg_state_label_any', 'State / Union Territory *')}
                   </label>
                   <select
                     value={formData.state}
                     onChange={(e) => {
                       const st = e.target.value as SupportedState;
-                      const cities = getCitiesForState(st);
                       setFormData(prev => ({
                         ...prev,
                         state: st,
-                        city: cities[0] || ''
+                        city: ''
                       }));
                     }}
                     className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:border-black focus:outline-none"
                     id="register-state-select"
                   >
-                    {SUPPORTED_STATES.map((s) => (
-                      <option key={s.name} value={s.name}>
-                        {s.name} ({s.code})
+                    <option value="" disabled>Select your state</option>
+                    {INDIA_STATES.map((name) => (
+                      <option key={name} value={name}>
+                        {name}
                       </option>
                     ))}
                   </select>
@@ -590,18 +591,22 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                   <label className="block text-xs font-bold text-gray-700 mb-1.5">
                     City / Town *
                   </label>
-                  <select
+                  <input
+                    type="text"
+                    list="register-city-suggestions"
                     value={formData.city}
                     onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                    placeholder="Type your city or town"
+                    maxLength={100}
+                    autoComplete="off"
                     className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:border-black focus:outline-none"
                     id="register-city-select"
-                  >
+                  />
+                  <datalist id="register-city-suggestions">
                     {availableCities.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
+                      <option key={c} value={c} />
                     ))}
-                  </select>
+                  </datalist>
                 </div>
 
                 {/* Category Dropdown */}
@@ -875,7 +880,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                 {/* Profile Photo Uploader */}
                 <div className="md:col-span-4 p-5 rounded-2xl bg-[#FAFAFA] border-2 border-gray-200 text-center space-y-3">
                   <div className="text-xs font-black text-black">
-                    Profile Photograph <span className="text-gray-400 font-bold">(Optional)</span>
+                    Profile Photograph *
                   </div>
 
                   <div className="relative w-28 h-28 mx-auto rounded-2xl overflow-hidden border-2 border-gray-300 bg-white group shadow-sm">
@@ -895,20 +900,8 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                       className="hidden"
                     />
                   </label>
-                  {formData.profilePhoto && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setFormData((previousData) => ({ ...previousData, profilePhoto: null }));
-                        clearFieldError('profilePhoto');
-                      }}
-                      className="block mx-auto text-[10px] font-bold text-gray-500 hover:text-black underline"
-                    >
-                      Remove photo
-                    </button>
-                  )}
                   <p className="text-[10px] text-gray-500 font-medium">
-                    Optional — a real photo builds customer trust. A default avatar is used if you skip it.
+                    Required — upload a clear photo of yourself so customers can recognize you.
                   </p>
                   {errors.profilePhoto && <p className="text-[11px] text-red-500 font-bold">{errors.profilePhoto}</p>}
                 </div>
@@ -1027,7 +1020,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {REGISTRATION_PLANS.map((plan) => {
+                {registrationPlans.map((plan) => {
                   const isSelected = formData.subscriptionPlan === plan.id;
                   return (
                     <button
@@ -1104,7 +1097,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                     <span className="text-gray-500">
                       {t(
                         'reg_plan_paid_hint',
-                        `₹${PAID_PLAN_PRICE_INR} per year, fixed. Our team collects payment offline after you register. Your top spot goes live once an admin approves your profile.`
+                        `₹${paidPlanPrice} per year, fixed. Our team collects payment offline after you register. Your top spot goes live once an admin approves your profile.`
                       )}
                     </span>
                   )}

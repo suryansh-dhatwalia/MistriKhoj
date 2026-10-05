@@ -2,6 +2,19 @@ import { TestimonialItem } from '../types';
 
 export const TESTIMONIALS: TestimonialItem[] = [
   {
+    id: 't-0',
+    author: 'Rakesh Yadav',
+    location: 'Lucknow',
+    state: 'Uttar Pradesh',
+    rating: 5,
+    serviceCategory: 'Electrician',
+    technicianName: 'Om Prakash Verma',
+    comment: 'Recorded this on my phone right after Om Prakash ji fixed our shop wiring in under an hour — wanted other homeowners to see how genuine the service is.',
+    date: '5 days ago',
+    avatarUrl: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=200&q=80',
+    videoUrl: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4'
+  },
+  {
     id: 't-1',
     author: 'Priyanka Borah',
     location: 'Guwahati',

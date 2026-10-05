@@ -18,6 +18,8 @@ import {
   categorySchema,
   cityListQuerySchema,
   citySchema,
+  mistriNewsListQuerySchema,
+  mistriNewsSchema,
   planListQuerySchema,
   planSchema,
   referralListQuerySchema,
@@ -27,30 +29,43 @@ import {
   testimonialListQuerySchema,
   testimonialSchema,
 } from "../schemas/content.schema.js";
+import { mistriRatingAdminListQuerySchema, mistriRatingAdminSchema } from "../schemas/mistri.schema.js";
 
 type AnyRecord = Record<string, unknown>;
 
+type MediaColumnHooks = {
+  existingSelectForWrite: AnyRecord;
+  toCreateData: (input: AnyRecord) => Promise<AnyRecord>;
+  toUpdateData: (input: AnyRecord, existing: AnyRecord) => Promise<AnyRecord>;
+  onAfterUpdate: (updated: AnyRecord, previous: AnyRecord) => Promise<void>;
+  onAfterDelete: (existing: AnyRecord) => Promise<void>;
+};
+
 /**
- * Shared "upload one image column" behaviour for resources that carry a Cloudinary asset.
- * `inputKey` is the write-request field; it is replaced by `<urlColumn>` + `<publicIdColumn>`.
- * A plain https URL that is unchanged is left alone so the stored public id is preserved.
+ * Shared "upload one media column" behaviour for resources that carry a Cloudinary
+ * asset. `inputKey` is the write-request field; it is replaced by `<urlColumn>` +
+ * `<publicIdColumn>`. A plain https URL that is unchanged is left alone so the stored
+ * public id is preserved. `kind` picks the image or video Cloudinary resource type.
  */
-function imageColumn(config: {
+function mediaColumn(config: {
   inputKey: string;
   urlColumn: string;
   publicIdColumn: string;
   folder: string;
-}) {
-  const { inputKey, urlColumn, publicIdColumn, folder } = config;
+  kind: "image" | "video";
+}): MediaColumnHooks {
+  const { inputKey, urlColumn, publicIdColumn, folder, kind } = config;
+  const store = kind === "video" ? storeVideo : storeImage;
+  const remove = kind === "video" ? removeStoredVideos : removeStoredImages;
 
   const toData = async (input: AnyRecord, existing?: AnyRecord): Promise<AnyRecord> => {
-    const { [inputKey]: image, ...rest } = input;
+    const { [inputKey]: media, ...rest } = input;
     const data: AnyRecord = { ...rest };
 
-    if (typeof image === "string" && image.length > 0) {
-      const unchanged = existing != null && image === existing[urlColumn];
+    if (typeof media === "string" && media.length > 0) {
+      const unchanged = existing != null && media === existing[urlColumn];
       if (!unchanged) {
-        const stored = await storeImage(image, folder);
+        const stored = await store(media, folder);
         data[urlColumn] = stored.url;
         data[publicIdColumn] = stored.publicId;
       }
@@ -65,14 +80,54 @@ function imageColumn(config: {
     onAfterUpdate: async (updated: AnyRecord, previous: AnyRecord) => {
       const previousId = previous[publicIdColumn];
       if (typeof previousId === "string" && previousId && previousId !== updated[publicIdColumn]) {
-        await removeStoredImages([previousId]);
+        await remove([previousId]);
       }
     },
     onAfterDelete: async (existing: AnyRecord) => {
       const publicId = existing[publicIdColumn];
       if (typeof publicId === "string" && publicId) {
-        await removeStoredImages([publicId]);
+        await remove([publicId]);
       }
+    },
+  };
+}
+
+/** Shared "upload one image column" behaviour — see `mediaColumn`. */
+function imageColumn(config: { inputKey: string; urlColumn: string; publicIdColumn: string; folder: string }) {
+  return mediaColumn({ ...config, kind: "image" });
+}
+
+/** Shared "upload one video column" behaviour — see `mediaColumn`. */
+function videoColumn(config: { inputKey: string; urlColumn: string; publicIdColumn: string; folder: string }) {
+  return mediaColumn({ ...config, kind: "video" });
+}
+
+/**
+ * Merges several independent media columns (e.g. a testimonial's avatar photo *and*
+ * its video clip) into the single hook set `createCrudController` accepts, running
+ * each column's upload/cleanup in turn.
+ */
+function combineColumns(...columns: MediaColumnHooks[]): MediaColumnHooks {
+  return {
+    existingSelectForWrite: columns.reduce(
+      (acc, col) => ({ ...acc, ...col.existingSelectForWrite }),
+      {} as AnyRecord,
+    ),
+    toCreateData: async (input: AnyRecord) => {
+      let data = input;
+      for (const col of columns) data = await col.toCreateData(data);
+      return data;
+    },
+    toUpdateData: async (input: AnyRecord, existing: AnyRecord) => {
+      let data = input;
+      for (const col of columns) data = await col.toUpdateData(data, existing);
+      return data;
+    },
+    onAfterUpdate: async (updated: AnyRecord, previous: AnyRecord) => {
+      for (const col of columns) await col.onAfterUpdate(updated, previous);
+    },
+    onAfterDelete: async (existing: AnyRecord) => {
+      for (const col of columns) await col.onAfterDelete(existing);
     },
   };
 }
@@ -224,10 +279,17 @@ export const advertisementController = createCrudController({
   ...adMedia,
 });
 
-const testimonialImage = imageColumn({
+const testimonialAvatar = imageColumn({
   inputKey: "avatar",
   urlColumn: "avatarUrl",
   publicIdColumn: "avatarPublicId",
+  folder: "mistrikhoj/testimonials",
+});
+
+const testimonialVideo = videoColumn({
+  inputKey: "video",
+  urlColumn: "videoUrl",
+  publicIdColumn: "videoPublicId",
   folder: "mistrikhoj/testimonials",
 });
 
@@ -239,7 +301,17 @@ export const testimonialController = createCrudController({
   listQuerySchema: testimonialListQuerySchema,
   searchableFields: ["author", "location", "technicianName", "serviceCategory"],
   defaultOrderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
-  ...testimonialImage,
+  ...combineColumns(testimonialAvatar, testimonialVideo),
+});
+
+export const mistriNewsController = createCrudController({
+  model: "mistriNews",
+  auditEntity: "MistriNews",
+  createSchema: mistriNewsSchema,
+  updateSchema: mistriNewsSchema,
+  listQuerySchema: mistriNewsListQuerySchema,
+  searchableFields: ["message"],
+  defaultOrderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
 });
 
 export const planController = createCrudController({
@@ -279,4 +351,16 @@ export const adRequestController = createCrudController({
       await removeStoredImages([publicId]);
     }
   },
+});
+
+export const mistriRatingController = createCrudController({
+  model: "mistriRating",
+  auditEntity: "MistriRating",
+  // createSchema is unused — ratings are created only by the public rating endpoint;
+  // no admin create route is mounted for this resource (see admin.routes.ts).
+  createSchema: mistriRatingAdminSchema,
+  updateSchema: mistriRatingAdminSchema,
+  listQuerySchema: mistriRatingAdminListQuerySchema,
+  defaultOrderBy: [{ createdAt: "desc" }],
+  buildWhere: (query) => (query.mistriId ? { mistriId: query.mistriId } : {}),
 });

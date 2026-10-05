@@ -5,6 +5,27 @@ import { z } from "zod";
  * These were previously duplicated verbatim in mistri.schema.ts and admin.schema.ts.
  */
 
+/**
+ * Free-text city / town names are normalised so "shimla", " SHIMLA " and "Shimla" all
+ * become "Shimla": whitespace collapsed, each word (and hyphenated part) capitalised.
+ * Keeps search filters and paid top-slot checks from treating them as different places.
+ */
+export const normalizeCityName = (value: string): string =>
+  value
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase()
+    .replace(/(^|[\s-])(\p{L})/gu, (_match, separator: string, letter: string) =>
+      `${separator}${letter.toUpperCase()}`,
+    );
+
+export const citySchema = z
+  .string()
+  .trim()
+  .min(2)
+  .max(100)
+  .transform(normalizeCityName);
+
 export const phoneSchema = z
   .string()
   .trim()
@@ -81,6 +102,25 @@ export const mediaInputSchema = z
     isSupportedMediaValue,
     "Must be a web URL, an image (PNG/JPEG/WebP), or a video (MP4/WebM/MOV)",
   );
+
+const isSupportedVideoValue = (value: string) => {
+  if (/^data:video\/(?:mp4|webm|ogg|quicktime);base64,/i.test(value)) {
+    return true;
+  }
+  return isSafeHttpUrl(value);
+};
+
+/**
+ * Accepts an https(s) URL or an inline base64 video (MP4/WebM/OGG/MOV), and nothing
+ * else. Used for video-only fields, such as a customer's video testimonial, that sit
+ * alongside — not instead of — an image field on the same record.
+ */
+export const videoInputSchema = z
+  .string()
+  .trim()
+  .min(1, "A video is required")
+  .max(70_000_000, "The file is too large. Keep videos under ~45 MB.")
+  .refine(isSupportedVideoValue, "Must be a web URL or a video (MP4/WebM/MOV)");
 
 export const contentStatusSchema = z.enum(["ACTIVE", "INACTIVE"]);
 

@@ -82,6 +82,18 @@ export interface TestimonialItem {
   displayDate: string;
   avatarUrl: string | null;
   avatarPublicId: string | null;
+  videoUrl: string | null;
+  videoPublicId: string | null;
+  sortOrder: number;
+  status: ContentStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MistriNewsItem {
+  id: number;
+  message: string;
+  linkUrl: string;
   sortOrder: number;
   status: ContentStatus;
   createdAt: string;
@@ -146,6 +158,15 @@ export interface AdRequestItem {
   message: string | null;
   status: AdRequestStatus;
   advertisementId: number | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MistriRatingItem {
+  id: number;
+  mistriId: number;
+  rating: number;
+  status: ContentStatus;
   createdAt: string;
   updatedAt: string;
 }

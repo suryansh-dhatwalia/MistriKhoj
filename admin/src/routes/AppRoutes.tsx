@@ -4,6 +4,7 @@ import { LoginPage } from '../pages/LoginPage';
 import { DashboardPage } from '../pages/DashboardPage';
 import { PendingMistrisPage } from '../pages/PendingMistrisPage';
 import { ApprovedMistrisPage } from '../pages/ApprovedMistrisPage';
+import { MistriRatingsPage } from '../pages/MistriRatingsPage';
 import { ProfilePage } from '../pages/ProfilePage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 import { StatesPage } from '../pages/StatesPage';
@@ -15,6 +16,7 @@ import { CategoryAdsPage } from '../pages/CategoryAdsPage';
 import { VideosPage } from '../pages/VideosPage';
 import { AdRequestsPage } from '../pages/AdRequestsPage';
 import { TestimonialsPage } from '../pages/TestimonialsPage';
+import { MistriNewsPage } from '../pages/MistriNewsPage';
 import { PlansPage } from '../pages/PlansPage';
 import { ReportsPage } from '../pages/ReportsPage';
 import { AuditLogPage } from '../pages/AuditLogPage';
@@ -39,6 +41,7 @@ export const AppRoutes: React.FC = () => {
 
         <Route path="/mistris/pending" element={<PendingMistrisPage />} />
         <Route path="/mistris/approved" element={<ApprovedMistrisPage />} />
+        <Route path="/mistris/ratings" element={<MistriRatingsPage />} />
 
         <Route path="/content/states" element={<StatesPage />} />
         <Route path="/content/cities" element={<CitiesPage />} />
@@ -49,6 +52,7 @@ export const AppRoutes: React.FC = () => {
         <Route path="/content/ads/requests" element={<AdRequestsPage />} />
         <Route path="/content/videos" element={<VideosPage />} />
         <Route path="/content/testimonials" element={<TestimonialsPage />} />
+        <Route path="/content/mistri-news" element={<MistriNewsPage />} />
         <Route path="/content/plans" element={<PlansPage />} />
 
         <Route path="/reports" element={<ReportsPage />} />

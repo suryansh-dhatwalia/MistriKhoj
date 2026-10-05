@@ -38,15 +38,8 @@ export const Footer: React.FC<FooterProps> = ({
               onClick={onNavigateHome}
               className="flex items-center gap-2.5 cursor-pointer select-none"
             >
-              <div className="w-10 h-10 rounded-xl bg-[#FFB800] text-black flex items-center justify-center font-black shadow">
-                <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current">
-                  <path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z"/>
-                </svg>
-              </div>
+              <img src="/logo.png" alt="MistriKhoj" className="h-14 w-auto" />
               <div className="flex flex-col">
-                <span className="font-heading-impact text-2xl tracking-wide text-white leading-none">
-                  MISTRI<span className="text-[#FFB800]">KHOJ</span>
-                </span>
                 <span className="text-[9px] uppercase tracking-[0.25em] text-gray-400 font-bold">
                   {t('nav_brand_subtitle', 'DIRECT VERIFIED DIRECTORY')}
                 </span>
@@ -65,7 +58,7 @@ export const Footer: React.FC<FooterProps> = ({
                 {t('nav_register_mistri', 'Register Mistri')}
               </button>
               <a
-                href="tel:18008896478"
+                href="tel:+918453246244"
                 className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-xs font-bold text-white transition-colors flex items-center gap-1.5"
               >
                 <Phone className="w-3.5 h-3.5 text-[#FFB800]" />
@@ -143,10 +136,6 @@ export const Footer: React.FC<FooterProps> = ({
               <li className="flex items-start gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-[#FFB800] shrink-0 mt-0.5" />
                 <span>{t('footer_rate_cards', 'Standardized Rate Cards')}</span>
-              </li>
-              <li className="flex items-start gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-[#FFB800] shrink-0 mt-0.5" />
-                <span>{t('footer_sos_desk', '24/7 SOS Emergency Desk')}</span>
               </li>
             </ul>
           </div>

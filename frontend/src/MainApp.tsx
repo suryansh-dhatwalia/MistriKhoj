@@ -1,8 +1,9 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
 import { AdBannerSection } from './components/AdBannerSection';
+import { MistriNewsStrip } from './components/MistriNewsStrip';
 import { TechnicianDirectory } from './components/TechnicianDirectory';
 import { PopularCategories } from './components/PopularCategories';
 import { HowItWorks } from './components/HowItWorks';
@@ -15,11 +16,11 @@ import { RegisterPage } from './components/RegisterPage';
 import { AdvertisePage } from './components/AdvertisePage';
 import { Footer } from './components/Footer';
 import { TechnicianModal } from './components/TechnicianModal';
-import { EmergencySOSModal } from './components/EmergencySOSModal';
 import { FloatingActions } from './components/FloatingActions';
 import { api } from './lib/api';
 import { avatarOrDefault } from './lib/avatar';
 import type {
+  DirectorySortOption,
   MistriListApiResponse,
   MistriListItem,
   RegistrationApiError,
@@ -44,11 +45,10 @@ const toTechnician = (mistri: MistriListItem): Technician => ({
     `${mistri.category} providing services in ${mistri.city}, ${mistri.state}.`,
   photoUrl: avatarOrDefault(mistri.profilePhotoUrl),
   galleryImages: mistri.galleryImages,
-  rating: 0,
-  reviewsCount: 0,
+  rating: mistri.avgRating ?? 0,
+  reviewsCount: mistri.ratingsCount ?? 0,
   isVerified: false,
   badgeLevel: 'New Registration',
-  isEmergencyAvailable: false,
   startingPrice: 0,
   completedJobs: 0,
   policeVerified: false,
@@ -65,11 +65,26 @@ export function MainApp() {
   const [selectedCity, setSelectedCity] = useState<string>('All');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [minExperience, setMinExperience] = useState<number>(0);
+  const [onlyGoldPartner, setOnlyGoldPartner] = useState<boolean>(false);
+  const [sortBy, setSortBy] = useState<DirectorySortOption>('random');
   const [technicians, setTechnicians] = useState<Technician[]>([]);
   const [isLoadingTechnicians, setIsLoadingTechnicians] = useState(true);
   const [techniciansError, setTechniciansError] = useState<string | null>(null);
   const [activeTechnicianModal, setActiveTechnicianModal] = useState<Technician | null>(null);
-  const [isSOSModalOpen, setIsSOSModalOpen] = useState<boolean>(false);
+
+  // Search only offers states / cities that currently have at least one live Mistri.
+  const activeStates = useMemo(
+    () => Array.from(new Set(technicians.map((tech) => tech.state).filter(Boolean))).sort(),
+    [technicians],
+  );
+  const getActiveCities = useCallback(
+    (stateName: string) =>
+      Array.from(
+        new Set(technicians.filter((tech) => tech.state === stateName).map((tech) => tech.city).filter(Boolean)),
+      ).sort(),
+    [technicians],
+  );
 
   const loadTechnicians = useCallback(async (signal?: AbortSignal) => {
     setIsLoadingTechnicians(true);
@@ -127,11 +142,11 @@ export function MainApp() {
         currentView={currentView}
         setCurrentView={setCurrentView}
         selectedState={selectedState}
+        activeStates={activeStates}
         setSelectedState={(st) => {
           setSelectedState(st);
           setSelectedCity('All');
         }}
-        onOpenSOSModal={() => setIsSOSModalOpen(true)}
       />
 
       {/* Main View Router */}
@@ -148,16 +163,27 @@ export function MainApp() {
               setSelectedCategory={setSelectedCategory}
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
+              minExperience={minExperience}
+              setMinExperience={setMinExperience}
+              onlyGoldPartner={onlyGoldPartner}
+              setOnlyGoldPartner={setOnlyGoldPartner}
+              sortBy={sortBy}
+              setSortBy={setSortBy}
               onSearchSubmit={handleSearchSubmit}
               onRegisterClick={() => {
                 setCurrentView('register');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               totalRegisteredCount={technicians.length}
+              activeStates={activeStates}
+              getActiveCities={getActiveCities}
             />
 
+            {/* Scrolling Mistri News Strip (admin-managed) */}
+            <MistriNewsStrip />
+
             {/* Featured Ad Banner Section */}
-            <AdBannerSection 
+            <AdBannerSection
               onAdvertiseClick={() => {
                 setCurrentView('advertise');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -178,6 +204,12 @@ export function MainApp() {
               setSelectedCategory={setSelectedCategory}
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
+              minExperience={minExperience}
+              setMinExperience={setMinExperience}
+              onlyGoldPartner={onlyGoldPartner}
+              setOnlyGoldPartner={setOnlyGoldPartner}
+              sortBy={sortBy}
+              setSortBy={setSortBy}
               onSelectTechnician={(tech) => setActiveTechnicianModal(tech)}
               onDirectContact={handleDirectContact}
             />
@@ -259,24 +291,13 @@ export function MainApp() {
       />
 
       {/* Floating Quick Action Widgets */}
-      <FloatingActions onOpenSOS={() => setIsSOSModalOpen(true)} />
+      <FloatingActions />
 
       {/* Modal Profile / ID & Credentials Inspector */}
       <TechnicianModal
         technician={activeTechnicianModal}
         onClose={() => setActiveTechnicianModal(null)}
         onDirectContact={handleDirectContact}
-      />
-
-      {/* 24/7 Emergency SOS Modal */}
-      <EmergencySOSModal
-        isOpen={isSOSModalOpen}
-        onClose={() => setIsSOSModalOpen(false)}
-        onSelectEmergencyCategory={(cat) => {
-          setSelectedCategory(cat);
-          setIsSOSModalOpen(false);
-          handleSearchSubmit();
-        }}
       />
     </div>
   );

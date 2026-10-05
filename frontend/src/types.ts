@@ -1,12 +1,5 @@
-export type SupportedState =
-  | 'Arunachal Pradesh'
-  | 'Assam'
-  | 'Maharashtra'
-  | 'Meghalaya'
-  | 'Nagaland'
-  | 'Rajasthan'
-  | 'Uttar Pradesh'
-  | 'West Bengal';
+/** Any Indian state or union territory name. */
+export type SupportedState = string;
 
 export type SupportedLanguage = 
   | 'en' // English
@@ -49,6 +42,8 @@ export interface ServiceCategory {
 
 export type MistriPlan = 'FREE' | 'PAID';
 
+export type DirectorySortOption = 'random' | 'rating' | 'experience' | 'jobs' | 'price';
+
 export interface Technician {
   id: string;
   name: string;
@@ -68,7 +63,6 @@ export interface Technician {
   reviewsCount: number;
   isVerified: boolean;
   badgeLevel: 'Gold Master' | 'Silver Pro' | 'Platinum Partner' | 'Standard Verified' | 'New Registration';
-  isEmergencyAvailable: boolean;
   startingPrice: number;
   completedJobs: number;
   policeVerified: boolean;
@@ -126,6 +120,13 @@ export interface TestimonialItem {
   comment: string;
   date: string;
   avatarUrl: string;
+  videoUrl?: string;
+}
+
+export interface MistriNewsItem {
+  id: string;
+  message: string;
+  linkUrl: string;
 }
 export interface RegistrationGalleryImage {
   url: string;
@@ -169,6 +170,8 @@ export interface MistriListItem {
   plan: MistriPlan;
   isFeatured: boolean;
   featuredUntil: string | null;
+  avgRating: number;
+  ratingsCount: number;
 }
 
 export interface PaidSlotStatusResponse {

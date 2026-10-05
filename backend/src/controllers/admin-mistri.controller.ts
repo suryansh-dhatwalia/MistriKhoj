@@ -1,11 +1,12 @@
 import type { NextFunction, Request, Response } from "express";
 import { Prisma } from "../../generated/prisma/client.js";
-import { PAID_PLAN_PRICE_INR, paidPlanExpiryFrom } from "../config/subscription.js";
+import { getPaidPlanPriceInr, paidPlanExpiryFrom } from "../config/subscription.js";
 import { prisma } from "../lib/prisma.js";
 import type { SafeAdmin } from "../middleware/admin-auth.js";
 import {
   adminMistriQuerySchema,
   adminMistriUpdateSchema,
+  mistriAvailabilitySchema,
   rejectMistriSchema,
 } from "../schemas/admin.schema.js";
 import { removeStoredImages } from "../services/image.service.js";
@@ -91,6 +92,8 @@ interface SubscriptionInfo {
   subscriptionStartsAt: string | null;
   featuredUntil: string | null;
   slotActive: boolean;
+  /** False when an admin has temporarily hidden this Mistri from the public site. */
+  isActive: boolean;
 }
 
 const FREE_SUBSCRIPTION_INFO: SubscriptionInfo = {
@@ -99,6 +102,7 @@ const FREE_SUBSCRIPTION_INFO: SubscriptionInfo = {
   subscriptionStartsAt: null,
   featuredUntil: null,
   slotActive: false,
+  isActive: true,
 };
 
 async function subscriptionInfoByMistriId(ids: number[]): Promise<Map<number, SubscriptionInfo>> {
@@ -110,11 +114,22 @@ async function subscriptionInfoByMistriId(ids: number[]): Promise<Map<number, Su
     select: { mistriId: true, plan: true, priceInr: true, startsAt: true, expiresAt: true },
   });
 
+  const inactiveRows = await prisma.mistriAvailability.findMany({
+    where: { mistriId: { in: ids }, status: "INACTIVE" },
+    select: { mistriId: true },
+  });
+  const inactiveIds = new Set(inactiveRows.map((row) => row.mistriId));
+
+  for (const id of ids) {
+    map.set(id, { ...FREE_SUBSCRIPTION_INFO, isActive: !inactiveIds.has(id) });
+  }
+
   const now = Date.now();
   for (const row of rows) {
     const slotActive =
       row.plan === "PAID" && row.expiresAt != null && row.expiresAt.getTime() > now;
     map.set(row.mistriId, {
+      isActive: !inactiveIds.has(row.mistriId),
       plan: row.plan,
       priceInr: row.priceInr,
       subscriptionStartsAt: row.startsAt ? row.startsAt.toISOString() : null,
@@ -358,7 +373,7 @@ export async function updateAdminMistri(
           subData.expiresAt = null;
         } else {
           subData.plan = "PAID";
-          subData.priceInr = PAID_PLAN_PRICE_INR;
+          subData.priceInr = await getPaidPlanPriceInr(tx);
           if (updated.status === "APPROVED") {
             // Already live — claim the slot now if it is free.
             await assertPaidSlotFree(tx, {
@@ -421,6 +436,74 @@ export async function updateAdminMistri(
   }
 }
 
+export async function setMistriAvailability(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  const id = parseMistriId(request.params.id);
+  if (!id) {
+    response.status(400).json({ success: false, message: "Invalid Mistri ID." });
+    return;
+  }
+
+  const validation = mistriAvailabilitySchema.safeParse(request.body);
+  if (!validation.success) {
+    response.status(422).json({
+      success: false,
+      message: "Provide isActive as true or false.",
+      errors: validation.error.flatten().fieldErrors,
+    });
+    return;
+  }
+
+  const { isActive } = validation.data;
+
+  try {
+    const admin = response.locals.admin as SafeAdmin;
+    const existing = await prisma.mistri.findUnique({ where: { id }, select: { status: true } });
+    if (!existing) {
+      response.status(404).json({ success: false, message: "Mistri registration not found." });
+      return;
+    }
+    if (existing.status !== "APPROVED") {
+      response
+        .status(409)
+        .json({ success: false, message: "Only approved Mistris can be set active or inactive." });
+      return;
+    }
+
+    const status = isActive ? "ACTIVE" : "INACTIVE";
+    await prisma.$transaction([
+      prisma.mistriAvailability.upsert({
+        where: { mistriId: id },
+        create: { mistriId: id, status },
+        update: { status },
+      }),
+      prisma.adminAuditLog.create({
+        data: {
+          adminId: admin.id,
+          action: isActive ? "MISTRI_ACTIVATED" : "MISTRI_DEACTIVATED",
+          entityType: "Mistri",
+          entityId: String(id),
+        },
+      }),
+    ]);
+
+    const mistri = await prisma.mistri.findUniqueOrThrow({ where: { id }, select: adminMistriSelect });
+    const info = await subscriptionInfoByMistriId([id]);
+    response.status(200).json({
+      success: true,
+      message: isActive
+        ? "Mistri is active and visible on the website again."
+        : "Mistri is inactive and hidden from the website.",
+      data: withSubscription(presentMistri(mistri), info),
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function approveMistri(
   request: Request,
   response: Response,
@@ -462,7 +545,7 @@ export async function approveMistri(
         await tx.mistriSubscription.update({
           where: { mistriId: id },
           data: {
-            priceInr: PAID_PLAN_PRICE_INR,
+            priceInr: await getPaidPlanPriceInr(tx),
             startsAt: now,
             expiresAt: paidPlanExpiryFrom(now),
             state: existing.state,
@@ -546,6 +629,7 @@ export async function deleteAdminMistri(
     await prisma.$transaction([
       // Free the paid slot (if any) — there is no FK cascade from the Mistri row.
       prisma.mistriSubscription.deleteMany({ where: { mistriId: id } }),
+      prisma.mistriAvailability.deleteMany({ where: { mistriId: id } }),
       prisma.mistri.delete({ where: { id } }),
       prisma.adminAuditLog.create({
         data: {

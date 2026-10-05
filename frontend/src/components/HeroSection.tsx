@@ -1,8 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Search,
-  MapPin,
-  ChevronDown,
   ShieldCheck,
   Tag,
   CalendarCheck,
@@ -21,13 +19,17 @@ import {
   LayoutGrid,
   Check,
   CheckCircle2,
-  Users
+  Users,
+  Award
 } from 'lucide-react';
-import { SupportedState } from '../types';
+import { DirectorySortOption, SupportedState } from '../types';
 import { useLanguage } from '../context/LanguageContext';
 import { useContent } from '../context/ContentContext';
 
 interface HeroSectionProps {
+  /** States / cities that currently have at least one live Mistri. */
+  activeStates: string[];
+  getActiveCities: (state: string) => string[];
   selectedState: SupportedState | 'All';
   setSelectedState: (st: SupportedState | 'All') => void;
   selectedCity: string;
@@ -36,12 +38,20 @@ interface HeroSectionProps {
   setSelectedCategory: (cat: string) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
+  minExperience: number;
+  setMinExperience: (years: number) => void;
+  onlyGoldPartner: boolean;
+  setOnlyGoldPartner: (value: boolean) => void;
+  sortBy: DirectorySortOption;
+  setSortBy: (value: DirectorySortOption) => void;
   onSearchSubmit: () => void;
   onRegisterClick: () => void;
   totalRegisteredCount: number;
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({
+  activeStates,
+  getActiveCities,
   selectedState,
   setSelectedState,
   selectedCity,
@@ -50,28 +60,21 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   setSelectedCategory,
   searchQuery,
   setSearchQuery,
+  minExperience,
+  setMinExperience,
+  onlyGoldPartner,
+  setOnlyGoldPartner,
+  sortBy,
+  setSortBy,
   onSearchSubmit,
   onRegisterClick,
   totalRegisteredCount
 }) => {
   const { t, language } = useLanguage();
-  const { states: SUPPORTED_STATES, getCitiesForState } = useContent();
+  const { states: SUPPORTED_STATES, categories: SERVICE_CATEGORIES } = useContent();
   const stateCount = SUPPORTED_STATES.length;
-  const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
-  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
 
-  const availableCities = selectedState !== 'All' ? getCitiesForState(selectedState) : [];
-
-  const handleStateSelect = (st: SupportedState | 'All') => {
-    setSelectedState(st);
-    setSelectedCity('All');
-    setIsLocationDropdownOpen(false);
-  };
-
-  const handleCategorySelect = (catName: string) => {
-    setSelectedCategory(catName);
-    setIsCategoryDropdownOpen(false);
-  };
+  const availableCities = selectedState !== 'All' ? getActiveCities(selectedState) : [];
 
   const quickCategories = [
     { name: t('cat_electrician', 'Electrician'), icon: Zap, categoryKey: 'Electrician' },
@@ -117,91 +120,13 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               {t('hero_subheadline', 'Find 15,000+ Aadhaar & police background checked local master craftsmen across {count} Indian states. Direct phone & WhatsApp calling.', { count: stateCount })}
             </p>
 
-            {/* Unified Search Bar Box */}
-            <div className="p-2 sm:p-2.5 rounded-2xl bg-white border-2 border-gray-900 shadow-[0_8px_20px_rgba(0,0,0,0.06)] relative z-20" id="search-filter-box">
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            {/* Unified Search & Advanced Filter Box */}
+            <div className="p-3 sm:p-4 rounded-2xl bg-white border-2 border-gray-900 shadow-[0_8px_20px_rgba(0,0,0,0.06)] relative z-20 space-y-3" id="search-filter-box">
 
-                {/* Location Picker Section */}
-                <div className="relative sm:w-48 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsLocationDropdownOpen(!isLocationDropdownOpen);
-                      setIsCategoryDropdownOpen(false);
-                    }}
-                    className="w-full flex items-center justify-between px-3 py-2.5 text-xs sm:text-sm font-bold text-gray-900 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors text-left"
-                    id="hero-location-btn"
-                  >
-                    <div className="flex items-center gap-1.5 truncate min-w-0">
-                      <MapPin className="w-4 h-4 text-black fill-black shrink-0" />
-                      <span className="truncate">
-                        {selectedCity !== 'All' ? selectedCity : selectedState === 'All' ? t('hero_all_states', 'All {count} States', { count: stateCount }) : selectedState}
-                      </span>
-                    </div>
-                    <ChevronDown className="w-3.5 h-3.5 text-gray-500 shrink-0 ml-1" />
-                  </button>
-
-                  {/* Dropdown Menu */}
-                  {isLocationDropdownOpen && (
-                    <div className="absolute left-0 top-full mt-2 w-64 max-w-[calc(100vw-2rem)] bg-white border border-gray-200 rounded-xl shadow-2xl p-2 z-50 max-h-80 overflow-y-auto">
-                      <div className="px-2 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                        {t('hero_search_state', 'Select State / Region')}
-                      </div>
-                      <button
-                        onClick={() => handleStateSelect('All')}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center justify-between transition-colors ${
-                          selectedState === 'All' ? 'bg-[#FFB800]/20 text-black font-bold' : 'text-gray-700 hover:bg-gray-50'
-                        }`}
-                      >
-                        <span>{t('hero_all_states', 'All {count} States', { count: stateCount })}</span>
-                        {selectedState === 'All' && <Check className="w-3.5 h-3.5 text-black" />}
-                      </button>
-
-                      <div className="my-1 border-t border-gray-100"></div>
-
-                      {SUPPORTED_STATES.map((st) => (
-                        <div key={st.name} className="py-0.5">
-                          <button
-                            onClick={() => handleStateSelect(st.name)}
-                            className={`w-full text-left px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-between transition-colors ${
-                              selectedState === st.name ? 'bg-[#FFB800]/20 text-black font-bold' : 'text-gray-800 hover:bg-gray-50'
-                            }`}
-                          >
-                            <span>{st.name} ({st.code})</span>
-                            {selectedState === st.name && <Check className="w-3.5 h-3.5 text-black" />}
-                          </button>
-
-                          {/* If selected state, show cities list */}
-                          {selectedState === st.name && (
-                            <div className="pl-4 pr-1 py-1 space-y-0.5">
-                              {getCitiesForState(st.name).map((c) => (
-                                <button
-                                  key={c}
-                                  onClick={() => {
-                                    setSelectedCity(c);
-                                    setIsLocationDropdownOpen(false);
-                                  }}
-                                  className={`w-full text-left px-2.5 py-1 rounded text-[11px] font-medium flex items-center justify-between ${
-                                    selectedCity === c ? 'bg-amber-100 text-black font-bold' : 'text-gray-600 hover:bg-gray-100'
-                                  }`}
-                                >
-                                  <span>{c}</span>
-                                  {selectedCity === c && <Check className="w-3 h-3 text-black" />}
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Vertical Divider */}
-                <div className="hidden sm:block w-px h-7 bg-gray-200 shrink-0"></div>
-
-                {/* Service Query Input */}
-                <div className="relative flex-1 min-w-0">
+              {/* Keyword Search Row */}
+              <div className="flex flex-col sm:flex-row items-stretch gap-2">
+                <div className="relative flex-1 min-w-0 flex items-center gap-2 px-3 bg-gray-50 rounded-xl">
+                  <Search className="w-4 h-4 text-gray-400 shrink-0" />
                   <input
                     type="text"
                     placeholder={t('nav_search_placeholder', 'Search Electrician, Plumber, Carpenter...')}
@@ -212,7 +137,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                         onSearchSubmit();
                       }
                     }}
-                    className="w-full px-3 py-2 text-xs sm:text-sm font-medium text-gray-900 placeholder:text-gray-400 bg-transparent focus:outline-none"
+                    className="w-full py-2.5 text-xs sm:text-sm font-medium text-gray-900 placeholder:text-gray-400 bg-transparent focus:outline-none"
                     id="hero-service-input"
                   />
                 </div>
@@ -227,8 +152,131 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   <Search className="w-4 h-4 text-black stroke-[2.5] shrink-0" />
                   <span>{t('hero_search_btn', 'Find Mistri')}</span>
                 </button>
+              </div>
+
+              {/* Advanced Filter Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 pt-3 border-t border-gray-100">
+
+                {/* State Filter */}
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
+                    {t('dir_state_filter', 'State')}
+                  </label>
+                  <select
+                    value={selectedState}
+                    onChange={(e) => {
+                      setSelectedState(e.target.value as SupportedState | 'All');
+                      setSelectedCity('All');
+                    }}
+                    className="w-full px-2.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-[11px] sm:text-xs font-bold text-gray-900 focus:border-black focus:outline-none"
+                  >
+                    <option value="All">{t('hero_all_states', 'All {count} States', { count: activeStates.length })}</option>
+                    {activeStates.map((stateName) => (
+                      <option key={stateName} value={stateName}>
+                        {stateName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* City Filter */}
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
+                    {t('dir_city_filter', 'City')}
+                  </label>
+                  <select
+                    value={selectedCity}
+                    onChange={(e) => setSelectedCity(e.target.value)}
+                    disabled={selectedState === 'All'}
+                    className="w-full px-2.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-[11px] sm:text-xs font-bold text-gray-900 focus:border-black focus:outline-none disabled:opacity-50"
+                  >
+                    <option value="All">
+                      {selectedState === 'All' ? t('hero_all_cities', 'All Cities') : `All in ${selectedState}`}
+                    </option>
+                    {availableCities.map((city) => (
+                      <option key={city} value={city}>
+                        {city}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Category Filter */}
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
+                    {t('dir_cat_filter', 'Category')}
+                  </label>
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="w-full px-2.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-[11px] sm:text-xs font-bold text-gray-900 focus:border-black focus:outline-none"
+                  >
+                    <option value="All">{t('hero_all_categories', 'All Categories')}</option>
+                    {SERVICE_CATEGORIES.map((cat) => (
+                      <option key={cat.id} value={cat.name}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Experience Filter */}
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
+                    {t('dir_exp_years', 'Experience')}
+                  </label>
+                  <select
+                    value={minExperience}
+                    onChange={(e) => setMinExperience(Number(e.target.value))}
+                    className="w-full px-2.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-[11px] sm:text-xs font-bold text-gray-900 focus:border-black focus:outline-none"
+                  >
+                    <option value={0}>{t('dir_all_exp', 'Any Experience')}</option>
+                    <option value={5}>5+ {t('dir_exp_years', 'Years')}</option>
+                    <option value={10}>10+ {t('dir_exp_years', 'Years')}</option>
+                    <option value={15}>15+ {t('dir_exp_years', 'Years')}</option>
+                  </select>
+                </div>
+
+                {/* Sort Order */}
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
+                    {t('dir_sort_by', 'Sort By')}
+                  </label>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as DirectorySortOption)}
+                    className="w-full px-2.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-[11px] sm:text-xs font-bold text-gray-900 focus:border-black focus:outline-none"
+                  >
+                    <option value="random">{t('dir_sort_random', 'Shuffled (Fair for All)')}</option>
+                    <option value="rating">{t('dir_sort_rating', 'Highest Rating (★ 4.9+)')}</option>
+                    <option value="experience">{t('dir_sort_experience', 'Most Experienced')}</option>
+                    <option value="jobs">{t('dir_sort_jobs', 'Most Jobs Completed')}</option>
+                    <option value="price">{t('dir_sort_price', 'Starting Rate (Lowest)')}</option>
+                  </select>
+                </div>
 
               </div>
+
+              {/* Secondary Quick Toggles */}
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs">
+                <label className="inline-flex items-center gap-2 cursor-pointer select-none bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200 hover:border-black transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={onlyGoldPartner}
+                    onChange={(e) => setOnlyGoldPartner(e.target.checked)}
+                    className="rounded border-gray-300 text-black focus:ring-0"
+                  />
+                  <span className="flex items-center gap-1 font-bold text-gray-900">
+                    <Award className="w-3.5 h-3.5 text-[#FFB800]" />
+                    {t('dir_filter_gold', 'Gold Master & Platinum Only')}
+                  </span>
+                </label>
+
+                <div className="text-[11px] text-gray-500 font-semibold">
+                  {t('dir_zero_comm', '0% commission')} • {t('trust_direct_tag', 'Direct Connect')}
+                </div>
+              </div>
+
             </div>
 
             {/* Feature Pills Below Search Bar */}

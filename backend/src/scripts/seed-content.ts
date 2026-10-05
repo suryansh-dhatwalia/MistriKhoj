@@ -332,7 +332,6 @@ const PLANS: Array<{
       "Gold Master Ustad Verified Seal (2.5x more trust)",
       "#1 Top 3 Featured placement in state & city search",
       "Unlimited customer calls & direct WhatsApp connects",
-      "Emergency 24/7 SOS alert lead broadcasts",
       "Full digital visiting card & QR code link",
       "Priority customer dispute resolution & support",
       "Zero lead fees forever",
@@ -491,11 +490,10 @@ const REFERRALS = [
 
 const SITE_SETTINGS: Array<{ key: string; value: unknown; label: string; settingGroup: string }> = [
   { key: "whatsapp_number", value: "+919957005542", label: "WhatsApp contact number", settingGroup: "contact" },
-  { key: "sos_number", value: "+919957005542", label: "Emergency SOS phone number", settingGroup: "contact" },
   { key: "support_email", value: "support@mistrikhoj.in", label: "Support email address", settingGroup: "contact" },
+  { key: "paid_plan_price_inr", value: 500, label: "Paid plan price (₹ per year)", settingGroup: "subscription" },
   { key: "ad_rotation_seconds", value: 6, label: "Home banner rotation interval (seconds)", settingGroup: "homepage" },
   { key: "directory_states_label", value: "Supported Indian States & 50+ Cities", label: "Locations section heading", settingGroup: "homepage" },
-  { key: "sos_enabled", value: true, label: "Show the Emergency SOS button", settingGroup: "features" },
 ];
 
 async function seed(): Promise<void> {

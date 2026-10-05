@@ -18,6 +18,7 @@ import PhoneIcon from '@mui/icons-material/Phone';
 import { Mistri } from '../../types/mistri.types';
 import { SafeImage } from '../common/SafeImage';
 import { PlanChip } from './PlanChip';
+import { AvailabilityToggle } from './AvailabilityToggle';
 import { formatDateOnly, formatExperience, formatPhoneNumber } from '../../utils/format.utils';
 import { brandColors } from '../../theme/theme';
 
@@ -30,6 +31,7 @@ interface MistriCardsMobileProps {
   onView: (mistri: Mistri) => void;
   onEdit: (mistri: Mistri) => void;
   onApprove?: (mistri: Mistri) => void;
+  onToggleAvailability?: (mistri: Mistri) => void;
   onRejectOrDelete: (mistri: Mistri) => void;
   isPendingTable?: boolean;
 }
@@ -43,6 +45,7 @@ export const MistriCardsMobile: React.FC<MistriCardsMobileProps> = ({
   onView,
   onEdit,
   onApprove,
+  onToggleAvailability,
   onRejectOrDelete,
   isPendingTable = false,
 }) => {
@@ -110,6 +113,11 @@ export const MistriCardsMobile: React.FC<MistriCardsMobileProps> = ({
                 />
                 <PlanChip mistri={mistri} />
               </Box>
+              {onToggleAvailability && (
+                <Box sx={{ mt: 0.5 }}>
+                  <AvailabilityToggle mistri={mistri} onToggle={() => onToggleAvailability(mistri)} />
+                </Box>
+              )}
             </Box>
           </Box>
 

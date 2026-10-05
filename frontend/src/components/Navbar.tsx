@@ -6,7 +6,6 @@ import {
   X,
   ChevronDown,
   CheckCircle2,
-  Zap,
 } from 'lucide-react';
 import { useContent } from '../context/ContentContext';
 import { SupportedState } from '../types';
@@ -19,10 +18,11 @@ interface NavbarProps {
     view: 'home' | 'register' | 'advertise',
   ) => void;
   selectedState: SupportedState | 'All';
+  /** States that currently have at least one live Mistri. */
+  activeStates: string[];
   setSelectedState: (
     state: SupportedState | 'All',
   ) => void;
-  onOpenSOSModal: () => void;
   onSelectCategory?: (category: string) => void;
 }
 
@@ -30,12 +30,12 @@ export const Navbar: React.FC<NavbarProps> = ({
   currentView,
   setCurrentView,
   selectedState,
+  activeStates,
   setSelectedState,
-  onOpenSOSModal,
   onSelectCategory,
 }) => {
   const { t } = useLanguage();
-  const { states: SUPPORTED_STATES, categories: SERVICE_CATEGORIES } = useContent();
+  const { categories: SERVICE_CATEGORIES } = useContent();
 
   const [mobileMenuOpen, setMobileMenuOpen] =
     useState(false);
@@ -117,23 +117,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             id="brand-logo-btn"
             className="group flex min-w-0 items-center gap-2 text-left min-[420px]:shrink-0 min-[420px]:gap-3"
           >
-            <span className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#FFB800] shadow-sm transition-transform group-hover:scale-105 min-[420px]:h-10 min-[420px]:w-10">
-              <svg
-                viewBox="0 0 24 24"
-                className="h-5 w-5 fill-current text-black min-[420px]:h-6 min-[420px]:w-6"
-                stroke="none"
-                aria-hidden="true"
-              >
-                <path d="M12 2L2 10.5V21C2 21.5523 2.44772 22 3 22H21C21.5523 22 22 21.5523 22 21V10.5L12 2ZM12 5.5L18.5 11V20H15V13.5L12 16.2L9 13.5V20H5.5V11L12 5.5Z" />
-              </svg>
-            </span>
+            <img
+              src="/logo.png"
+              alt="MistriKhoj"
+              className="h-10 w-auto shrink-0 transition-transform group-hover:scale-105 min-[420px]:h-12"
+            />
 
             <span className="flex min-w-0 flex-col">
-              <span className="truncate font-display text-xl font-extrabold leading-none tracking-tight text-[#111827] min-[420px]:text-2xl">
-                MistriKhoj
-              </span>
-
-              <span className="mt-1 hidden whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.18em] text-[#6B7280] min-[420px]:block">
+              <span className="hidden whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.18em] text-[#6B7280] min-[420px]:block">
                 {t(
                   'nav_brand_subtitle',
                   'DIRECT VERIFIED DIRECTORY',
@@ -317,7 +308,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
                 <span>
                   {selectedState === 'All'
-                    ? t('nav_states_count', '{count} States', { count: SUPPORTED_STATES.length })
+                    ? t('nav_states_count', '{count} States', { count: activeStates.length })
                     : selectedState}
                 </span>
 
@@ -348,8 +339,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <span>
                       {t(
                         'nav_all_supported_regions',
-                        'All Supported Regions ({count} States)',
-                        { count: SUPPORTED_STATES.length },
+                        'All Regions ({count} States)',
+                        { count: activeStates.length },
                       )}
                     </span>
 
@@ -358,26 +349,26 @@ export const Navbar: React.FC<NavbarProps> = ({
                     )}
                   </button>
 
-                  {SUPPORTED_STATES.map((state) => (
+                  {activeStates.map((stateName) => (
                     <button
                       type="button"
-                      key={state.name}
+                      key={stateName}
                       onClick={() => {
-                        setSelectedState(state.name);
+                        setSelectedState(stateName);
                         setStateDropdownOpen(false);
                       }}
                       className={`flex w-full items-center justify-between px-3.5 py-1.5 text-left text-xs transition-colors hover:bg-amber-50/50 ${
-                        selectedState === state.name
+                        selectedState === stateName
                           ? 'bg-amber-50 font-bold text-black'
                           : 'text-gray-700'
                       }`}
                     >
                       <span>
-                        {state.name} ({state.code})
+                        {stateName}
                       </span>
 
                       {selectedState ===
-                        state.name && (
+                        stateName && (
                         <CheckCircle2 className="h-3.5 w-3.5 text-[#FFB800]" />
                       )}
                     </button>
@@ -538,24 +529,6 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           <div className="flex flex-col gap-2 border-t border-gray-100 pt-2">
-            <button
-              type="button"
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onOpenSOSModal();
-              }}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-black px-4 py-2.5 text-xs font-black text-[#FFB800]"
-            >
-              <Zap className="h-4 w-4 fill-[#FFB800]" />
-
-              <span>
-                {t(
-                  'nav_emergency_sos',
-                  '24/7 Emergency SOS Line',
-                )}
-              </span>
-            </button>
-
             <button
               type="button"
               onClick={() => {

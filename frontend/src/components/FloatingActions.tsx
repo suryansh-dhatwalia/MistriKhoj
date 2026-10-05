@@ -1,12 +1,12 @@
 import React from 'react';
-import { MessageSquare, PhoneCall, ArrowUp, Zap } from 'lucide-react';
+import { MessageSquare, ArrowUp } from 'lucide-react';
 import { LanguageSelector } from './LanguageSelector';
+import { useContent } from '../context/ContentContext';
 
-interface FloatingActionsProps {
-  onOpenSOS: () => void;
-}
+export const FloatingActions: React.FC = () => {
+  const { settings } = useContent();
+  const whatsappDigits = String(settings.whatsapp_number ?? '918453246244').replace(/\D/g, '');
 
-export const FloatingActions: React.FC<FloatingActionsProps> = ({ onOpenSOS }) => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -20,21 +20,9 @@ export const FloatingActions: React.FC<FloatingActionsProps> = ({ onOpenSOS }) =
 
       {/* Bottom Right Floating Action Buttons */}
       <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-2.5">
-        {/* 24/7 SOS Alert Button */}
-        <button
-          onClick={onOpenSOS}
-          className="group flex items-center gap-2 px-4 py-2.5 rounded-full bg-black hover:bg-gray-800 text-[#FFB800] text-xs font-black shadow-xl hover:scale-105 transition-all border-2 border-[#FFB800] cursor-pointer"
-          title="24/7 Emergency Technician SOS"
-          id="floating-sos-btn"
-        >
-          <span className="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
-          <Zap className="w-4 h-4 fill-[#FFB800] text-[#FFB800]" />
-          <span className="hidden sm:inline">24/7 SOS</span>
-        </button>
-
         {/* WhatsApp Quick Chat Floating Button */}
         <a
-          href="https://wa.me/919876543210?text=Hello%20MistriKhoj,%20I%20need%20help%20finding%20a%20verified%20technician"
+          href={`https://wa.me/${whatsappDigits}?text=Hello%20MistriKhoj,%20I%20need%20help%20finding%20a%20verified%20technician`}
           target="_blank"
           rel="noreferrer"
           className="group flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#25D366] hover:bg-[#1EBE5D] text-white text-xs font-bold shadow-xl hover:scale-105 transition-all border border-emerald-600 cursor-pointer"

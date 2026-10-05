@@ -1,7 +1,8 @@
 import type { NextFunction, Request, Response } from "express";
-import { PAID_PLAN_PRICE_INR } from "../config/subscription.js";
+import { getPaidPlanPriceInr } from "../config/subscription.js";
 import { prisma } from "../lib/prisma.js";
-import { mistriRegistrationSchema, paidSlotQuerySchema } from "../schemas/mistri.schema.js";
+import { mistriRatingSchema, mistriRegistrationSchema, paidSlotQuerySchema } from "../schemas/mistri.schema.js";
+import { idParamSchema } from "../schemas/shared.js";
 import {
   removeStoredImages,
   storeImage,
@@ -31,8 +32,14 @@ export async function listMistris(
   next: NextFunction,
 ): Promise<void> {
   try {
+    // Admin-deactivated Mistris stay approved but are hidden from the public list.
+    const inactive = await prisma.mistriAvailability.findMany({
+      where: { status: "INACTIVE" },
+      select: { mistriId: true },
+    });
+
     const mistris = await prisma.mistri.findMany({
-      where: { status: "APPROVED" },
+      where: { status: "APPROVED", id: { notIn: inactive.map((row) => row.mistriId) } },
       orderBy: { createdAt: "desc" },
       select: {
         id: true,
@@ -72,9 +79,27 @@ export async function listMistris(
       }
     }
 
+    // Same manual-join approach as the subscription lookup above: MistriRating has
+    // no Prisma relation to Mistri, so its per-Mistri average is aggregated here and
+    // merged in by id.
+    const ratingAggregates =
+      mistris.length > 0
+        ? await prisma.mistriRating.groupBy({
+            by: ["mistriId"],
+            where: { mistriId: { in: mistris.map((mistri) => mistri.id) }, status: "ACTIVE" },
+            _avg: { rating: true },
+            _count: { rating: true },
+          })
+        : [];
+
+    const ratingByMistriId = new Map(
+      ratingAggregates.map((row) => [row.mistriId, { avg: row._avg.rating ?? 0, count: row._count.rating }]),
+    );
+
     const data = mistris
       .map((mistri) => {
         const featuredUntil = featuredUntilByMistriId.get(mistri.id) ?? null;
+        const ratingInfo = ratingByMistriId.get(mistri.id);
         return {
           ...mistri,
           servicesOffered: toStringArray(mistri.servicesOffered),
@@ -82,6 +107,8 @@ export async function listMistris(
           plan: featuredUntil ? ("PAID" as const) : ("FREE" as const),
           isFeatured: featuredUntil != null,
           featuredUntil: featuredUntil ? featuredUntil.toISOString() : null,
+          avgRating: ratingInfo ? Math.round(ratingInfo.avg * 10) / 10 : 0,
+          ratingsCount: ratingInfo?.count ?? 0,
         };
       })
       // Featured profiles first; `createdAt desc` order is preserved within each
@@ -144,7 +171,7 @@ export async function getPaidSlotStatus(
       success: true,
       available: heldUntil == null,
       heldUntil,
-      priceInr: PAID_PLAN_PRICE_INR,
+      priceInr: await getPaidPlanPriceInr(prisma),
     });
   } catch (error) {
     next(error);
@@ -184,33 +211,12 @@ export async function registerMistri(
       return;
     }
 
-    // Reject a stale registration form whose state / city / category was removed or set
-    // to Inactive by an admin after the form was loaded. Checked before any image upload
-    // so nothing is wasted, and only enforced once the CMS masters are populated.
-    const [activeStateCount, activeCategoryCount] = await Promise.all([
-      prisma.state.count({ where: { status: "ACTIVE" } }),
-      prisma.category.count({ where: { status: "ACTIVE" } }),
-    ]);
+    // A Mistri may register from any state / city in India, so location is free-form
+    // and not checked against the CMS state / city masters. Only the category is
+    // validated, and only once the CMS category master is populated.
+    const activeCategoryCount = await prisma.category.count({ where: { status: "ACTIVE" } });
 
     const selectionErrors: Record<string, string[]> = {};
-
-    if (activeStateCount > 0) {
-      const state = await prisma.state.findFirst({
-        where: { name: input.state, status: "ACTIVE" },
-        select: { id: true },
-      });
-      if (!state) {
-        selectionErrors.state = ["This state is no longer available. Please pick another."];
-      } else {
-        const city = await prisma.city.findFirst({
-          where: { name: input.city, status: "ACTIVE", state: { name: input.state } },
-          select: { id: true },
-        });
-        if (!city) {
-          selectionErrors.city = ["This city is no longer available. Please pick another."];
-        }
-      }
-    }
 
     if (activeCategoryCount > 0) {
       const category = await prisma.category.findFirst({
@@ -234,14 +240,15 @@ export async function registerMistri(
       return;
     }
 
-    // The profile photo is optional. When it is omitted, an empty URL is stored
-    // and the public site / admin dashboard render a default silhouette avatar.
-    let profilePhoto: StoredImage = { url: "", publicId: null };
-    if (input.profilePhoto) {
-      profilePhoto = await storeImage(input.profilePhoto, "mistrikhoj/mistris/profile-photos");
-      if (profilePhoto.publicId) {
-        uploadedPublicIds.push(profilePhoto.publicId);
-      }
+    // Required as of the mistriRegistrationSchema check above — every new
+    // registration uploads a real photo. Existing Mistris registered before this
+    // was enforced may still have a blank profilePhotoUrl; that's untouched here.
+    const profilePhoto: StoredImage = await storeImage(
+      input.profilePhoto,
+      "mistrikhoj/mistris/profile-photos",
+    );
+    if (profilePhoto.publicId) {
+      uploadedPublicIds.push(profilePhoto.publicId);
     }
 
     const galleryImages: StoredImage[] = [];
@@ -317,7 +324,7 @@ export async function registerMistri(
           state: input.state,
           city: input.city,
           category: input.category,
-          priceInr: input.subscriptionPlan === "PAID" ? PAID_PLAN_PRICE_INR : 0,
+          priceInr: input.subscriptionPlan === "PAID" ? await getPaidPlanPriceInr(tx) : 0,
         },
       });
 
@@ -331,6 +338,65 @@ export async function registerMistri(
     });
   } catch (error) {
     await removeStoredImages(uploadedPublicIds);
+    next(error);
+  }
+}
+
+/**
+ * POST /api/mistris/:id/rating — public, anonymous star rating (1-5, no comment).
+ * Counts immediately; an admin can later deactivate a fake/abusive one from the
+ * Ratings screen, which excludes it from the average shown on the public site.
+ */
+export async function rateMistri(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  const id = idParamSchema.safeParse(request.params.id);
+  if (!id.success) {
+    response.status(400).json({ success: false, message: "Invalid Mistri ID." });
+    return;
+  }
+
+  const validation = mistriRatingSchema.safeParse(request.body);
+  if (!validation.success) {
+    response.status(422).json({
+      success: false,
+      message: "Please pick a star rating from 1 to 5.",
+      errors: validation.error.flatten().fieldErrors,
+    });
+    return;
+  }
+
+  try {
+    const mistri = await prisma.mistri.findFirst({
+      where: { id: id.data, status: "APPROVED" },
+      select: { id: true },
+    });
+    if (!mistri) {
+      response.status(404).json({ success: false, message: "This Mistri could not be found." });
+      return;
+    }
+
+    await prisma.mistriRating.create({
+      data: { mistriId: id.data, rating: validation.data.rating },
+    });
+
+    const aggregate = await prisma.mistriRating.aggregate({
+      where: { mistriId: id.data, status: "ACTIVE" },
+      _avg: { rating: true },
+      _count: { rating: true },
+    });
+
+    response.status(201).json({
+      success: true,
+      message: "Thanks for rating this Mistri!",
+      data: {
+        avgRating: Math.round((aggregate._avg.rating ?? 0) * 10) / 10,
+        ratingsCount: aggregate._count.rating,
+      },
+    });
+  } catch (error) {
     next(error);
   }
 }

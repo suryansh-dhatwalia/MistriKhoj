@@ -29,22 +29,7 @@ export const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ childr
             mb: 2,
           }}
         >
-          <Box
-            sx={{
-              width: 44,
-              height: 44,
-              borderRadius: 2,
-              backgroundColor: brandColors.black,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: brandColors.mustard,
-              fontWeight: 800,
-              fontSize: '1.25rem',
-            }}
-          >
-            MK
-          </Box>
+          <Box component="img" src="/logo.png" alt="MistriKhoj" sx={{ height: 44, width: 'auto' }} />
           <Box>
             <Typography variant="h6" sx={{ fontWeight: 800, lineHeight: 1.1 }}>
               MistriKhoj

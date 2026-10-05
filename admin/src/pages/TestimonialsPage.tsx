@@ -1,5 +1,6 @@
 import React from 'react';
-import { Avatar, Box, Rating, Typography } from '@mui/material';
+import { Avatar, Box, Chip, Rating, Typography } from '@mui/material';
+import VideocamIcon from '@mui/icons-material/Videocam';
 import { testimonialsApi } from '../api/content.api';
 import type { TestimonialItem } from '../types/content.types';
 import { ResourcePage } from '../components/resource/ResourcePage';
@@ -31,6 +32,16 @@ const columns: ColumnDef<TestimonialItem>[] = [
   { key: 'rating', header: 'Rating', render: (row) => <Rating value={row.rating} readOnly size="small" /> },
   { key: 'technicianName', header: 'Technician' },
   { key: 'serviceCategory', header: 'Service' },
+  {
+    key: 'videoUrl',
+    header: 'Video',
+    render: (row) =>
+      row.videoUrl ? (
+        <Chip icon={<VideocamIcon />} label="Video" size="small" color="primary" variant="outlined" />
+      ) : (
+        '—'
+      ),
+  },
   { key: 'status', header: 'Status', render: (row) => <StatusChip status={row.status} /> },
 ];
 
@@ -44,6 +55,12 @@ const fields: FieldDef[] = [
   { type: 'textarea', name: 'comment', label: 'Review text', required: true },
   { type: 'text', name: 'displayDate', label: 'Displayed date label', placeholder: '3 days ago', required: true },
   { type: 'image', name: 'avatar', label: 'Customer photo' },
+  {
+    type: 'video',
+    name: 'video',
+    label: 'Video testimonial (optional)',
+    helperText: 'MP4, WebM or MOV up to 45 MB. Shown instead of the photo card when present.',
+  },
   sortOrderField,
   statusField,
 ];
@@ -58,6 +75,7 @@ const emptyValues = {
   comment: '',
   displayDate: '',
   avatar: '',
+  video: '',
   sortOrder: 0,
   status: 'ACTIVE',
 };
@@ -85,6 +103,7 @@ export const TestimonialsPage: React.FC = () => (
       comment: row.comment,
       displayDate: row.displayDate,
       avatar: row.avatarUrl ?? '',
+      video: row.videoUrl ?? '',
       sortOrder: row.sortOrder,
       status: row.status,
     })}

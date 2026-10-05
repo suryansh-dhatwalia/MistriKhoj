@@ -80,23 +80,11 @@ export const LoginPage: React.FC = () => {
             {/* Brand Logo & Title */}
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
               <Box
-                sx={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: '6px',
-                  backgroundColor: brandColors.black,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: brandColors.mustard,
-                  fontWeight: 900,
-                  fontSize: '1.25rem',
-                  mb: 1.5,
-                  boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                }}
-              >
-                MK
-              </Box>
+                component="img"
+                src="/logo.png"
+                alt="MistriKhoj"
+                sx={{ height: 72, width: 'auto', mb: 1.5 }}
+              />
 
               <Typography variant="h4" sx={{ fontWeight: 800, color: brandColors.textPrimary }}>
                 MistriKhoj

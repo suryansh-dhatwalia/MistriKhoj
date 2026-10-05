@@ -2,6 +2,11 @@ import type { NextFunction, Request, Response } from "express";
 import { Prisma } from "../../generated/prisma/client.js";
 import { prisma } from "../lib/prisma.js";
 import type { SafeAdmin } from "../middleware/admin-auth.js";
+import {
+  DEFAULT_PAID_PLAN_PRICE_INR,
+  PAID_PLAN_PRICE_SETTING_KEY,
+  isValidPaidPlanPrice,
+} from "../config/subscription.js";
 import { siteSettingsPatchSchema } from "../schemas/content.schema.js";
 
 /** GET /api/admin/settings */
@@ -11,6 +16,17 @@ export async function listSiteSettings(
   next: NextFunction,
 ): Promise<void> {
   try {
+    // Make sure the editable price row exists (create-only; never overwrites).
+    await prisma.siteSetting.upsert({
+      where: { key: PAID_PLAN_PRICE_SETTING_KEY },
+      update: {},
+      create: {
+        key: PAID_PLAN_PRICE_SETTING_KEY,
+        value: DEFAULT_PAID_PLAN_PRICE_INR,
+        label: "Paid plan price (₹ per year)",
+        settingGroup: "subscription",
+      },
+    });
     const settings = await prisma.siteSetting.findMany({
       orderBy: [{ settingGroup: "asc" }, { key: "asc" }],
     });
@@ -32,6 +48,15 @@ export async function updateSiteSettings(
       success: false,
       message: "Please correct the highlighted settings.",
       errors: parsed.error.flatten().fieldErrors,
+    });
+    return;
+  }
+
+  const price = parsed.data.settings.find((entry) => entry.key === PAID_PLAN_PRICE_SETTING_KEY);
+  if (price && !isValidPaidPlanPrice(price.value)) {
+    response.status(422).json({
+      success: false,
+      message: "Paid plan price must be a whole number of rupees greater than 0.",
     });
     return;
   }

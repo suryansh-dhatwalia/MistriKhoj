@@ -24,6 +24,8 @@ const envSchema = z
     ADMIN_COOKIE_SAME_SITE: z.enum(["lax", "strict", "none"]).optional(),
     ADMIN_COOKIE_DOMAIN: optionalNonEmptyString,
     SHUTDOWN_TIMEOUT_MS: z.coerce.number().int().min(1_000).max(60_000).default(10_000),
+    BACKUP_DIR: z.string().trim().min(1).default("backups"),
+    BACKUP_INTERVAL_DAYS: z.coerce.number().int().min(0).max(365).default(15),
     DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
     CLOUDINARY_CLOUD_NAME: optionalNonEmptyString,
     CLOUDINARY_API_KEY: optionalNonEmptyString,

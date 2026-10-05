@@ -3,6 +3,7 @@ import {
   getAds,
   getCategories,
   getLocations,
+  getMistriNews,
   getPlans,
   getPublicSettings,
   getTestimonials,
@@ -17,6 +18,7 @@ contentRouter.get("/categories", getCategories);
 contentRouter.get("/ads", getAds);
 contentRouter.get("/videos", getVideos);
 contentRouter.get("/testimonials", getTestimonials);
+contentRouter.get("/mistri-news", getMistriNews);
 contentRouter.get("/plans", getPlans);
 contentRouter.get("/settings", getPublicSettings);
 contentRouter.get("/referrals/:code", validateReferral);

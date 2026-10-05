@@ -1,5 +1,6 @@
 import { app } from "./app.js";
 import { env } from "./config/env.js";
+import { startBackupScheduler } from "./lib/data-export.js";
 import { prisma } from "./lib/prisma.js";
 
 async function startServer(): Promise<void> {
@@ -11,6 +12,7 @@ async function startServer(): Promise<void> {
     server.once("error", reject);
   });
   console.log(`MistriKhoj API is running on port ${env.PORT}`);
+  startBackupScheduler();
 
   let isShuttingDown = false;
   const shutdown = async (signal: string) => {

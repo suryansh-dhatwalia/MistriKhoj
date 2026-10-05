@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import type { ServiceCategory, StateLocationInfo, SubscriptionPlan, TestimonialItem } from '../types';
+import type { MistriNewsItem, ServiceCategory, StateLocationInfo, SubscriptionPlan, TestimonialItem } from '../types';
 import { SUPPORTED_STATES as STATIC_STATES } from '../data/locations';
 import { SERVICE_CATEGORIES as STATIC_CATEGORIES } from '../data/categories';
 import { TESTIMONIALS as STATIC_TESTIMONIALS } from '../data/testimonials';
@@ -18,6 +18,7 @@ interface ContentContextValue {
   plans: SubscriptionPlan[];
   homeAds: HomeAd[];
   videos: VideoItem[];
+  mistriNews: MistriNewsItem[];
   settings: Record<string, unknown>;
   getCitiesForState: (stateName: string) => string[];
   /** 'live' once at least one slice loaded from the API, otherwise 'fallback'. */
@@ -34,6 +35,7 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [plans, setPlans] = useState<SubscriptionPlan[]>(STATIC_PLANS);
   const [homeAds, setHomeAds] = useState<HomeAd[]>(FALLBACK_ADS);
   const [videos, setVideos] = useState<VideoItem[]>([]);
+  const [mistriNews, setMistriNews] = useState<MistriNewsItem[]>([]);
   const [settings, setSettings] = useState<Record<string, unknown>>({});
   const [source, setSource] = useState<'fallback' | 'live'>('fallback');
   const [loading, setLoading] = useState(true);
@@ -49,11 +51,12 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
       contentApi.plans(),
       contentApi.homeAds(),
       contentApi.videos(),
+      contentApi.mistriNews(),
       contentApi.settings(),
     ]).then((results) => {
       if (!active) return;
       let anyLive = false;
-      const [loc, cat, test, plan, ads, vids, sett] = results;
+      const [loc, cat, test, plan, ads, vids, news, sett] = results;
 
       if (loc.status === 'fulfilled') {
         anyLive = true;
@@ -79,6 +82,10 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (vids.status === 'fulfilled') {
         anyLive = true;
         setVideos(vids.value as VideoItem[]);
+      }
+      if (news.status === 'fulfilled') {
+        anyLive = true;
+        setMistriNews(news.value as MistriNewsItem[]);
       }
       if (sett.status === 'fulfilled') {
         anyLive = true;
@@ -107,12 +114,13 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
       plans,
       homeAds,
       videos,
+      mistriNews,
       settings,
       getCitiesForState,
       source,
       loading,
     }),
-    [states, categories, testimonials, plans, homeAds, videos, settings, getCitiesForState, source, loading],
+    [states, categories, testimonials, plans, homeAds, videos, mistriNews, settings, getCitiesForState, source, loading],
   );
 
   return <ContentContext.Provider value={value}>{children}</ContentContext.Provider>;

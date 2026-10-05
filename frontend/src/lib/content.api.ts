@@ -1,5 +1,5 @@
 import { api } from './api';
-import type { ServiceCategory, StateLocationInfo, SubscriptionPlan, TestimonialItem } from '../types';
+import type { MistriNewsItem, ServiceCategory, StateLocationInfo, SubscriptionPlan, TestimonialItem } from '../types';
 import type { HomeAd } from '../data/ads';
 
 interface ApiEnvelope<T> {
@@ -24,6 +24,7 @@ export const contentApi = {
   homeAds: () => getData<Array<Record<string, unknown>>>('/content/ads?placement=HOME_BANNER'),
   videos: () => getData<VideoItem[]>('/content/videos'),
   testimonials: () => getData<TestimonialItem[]>('/content/testimonials'),
+  mistriNews: () => getData<MistriNewsItem[]>('/content/mistri-news'),
   plans: () => getData<SubscriptionPlan[]>('/content/plans'),
   settings: () => getData<Record<string, unknown>>('/content/settings'),
 };

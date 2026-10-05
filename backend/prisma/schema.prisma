@@ -215,6 +215,8 @@ model Testimonial {
   displayDate     String        @map("display_date") @db.VarChar(60)
   avatarUrl       String?       @map("avatar_url") @db.VarChar(500)
   avatarPublicId  String?       @map("avatar_public_id") @db.VarChar(255)
+  videoUrl        String?       @map("video_url") @db.VarChar(500)
+  videoPublicId   String?       @map("video_public_id") @db.VarChar(255)
   sortOrder       Int           @default(0) @map("sort_order")
   status          ContentStatus @default(ACTIVE)
   createdAt       DateTime      @default(now()) @map("created_at")
@@ -326,4 +328,54 @@ model MistriSubscription {
 
   @@index([plan, state, city, category, expiresAt])
   @@map("mistri_subscriptions")
+}
+
+// A single star rating (1-5) left by a site visitor for a Mistri. No customer login
+// exists, so this is intentionally anonymous and star-only — no comment/review text.
+// Mirrors MistriSubscription: a plain `mistriId` column joined manually in code, no
+// Prisma `@relation`, so the Mistri model itself needs no changes for this feature.
+// `status` lets an admin deactivate a fake/abusive rating without deleting the row;
+// only ACTIVE rows count toward a Mistri's average.
+model MistriRating {
+  id        Int           @id @default(autoincrement())
+  mistriId  Int           @map("mistri_id")
+  rating    Int
+  status    ContentStatus @default(ACTIVE)
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  @@index([mistriId, status])
+  @@map("mistri_ratings")
+}
+
+// A scrolling news-strip item shown on the public homepage before the ad banners —
+// e.g. a new government law or scheme affecting Mistris, linking out to the full
+// article. Admin-managed like Testimonial/Advertisement: `status` toggles visibility,
+// `sortOrder` controls the scroll order.
+model MistriNews {
+  id        Int           @id @default(autoincrement())
+  message   String        @db.VarChar(300)
+  linkUrl   String        @map("link_url") @db.VarChar(500)
+  sortOrder Int           @default(0) @map("sort_order")
+  status    ContentStatus @default(ACTIVE)
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  @@index([status, sortOrder])
+  @@map("mistri_news")
+}
+
+// Lets an admin temporarily hide an approved Mistri from the public site (e.g. they
+// are unavailable for a few days) without deleting the registration. Mirrors
+// MistriSubscription / MistriRating: a plain `mistriId` column joined in code, no
+// Prisma `@relation`, so the Mistri model itself needs no changes. No row means
+// ACTIVE; only INACTIVE Mistris are hidden from the public directory.
+model MistriAvailability {
+  id        Int           @id @default(autoincrement())
+  mistriId  Int           @unique @map("mistri_id")
+  status    ContentStatus @default(ACTIVE)
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  @@map("mistri_availability")
 }

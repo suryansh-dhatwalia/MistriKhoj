@@ -1,10 +1,16 @@
 import type { MistriPlan } from '../types';
 
 /**
- * The two plans a Mistri picks during registration. The Paid price is fixed here
- * (and again on the server) and cannot be changed by the technician.
+ * The two plans a Mistri picks during registration. The Paid price is set by an
+ * admin (Site Settings → paid_plan_price_inr); this is only the fallback used
+ * before settings load. The server decides the real price.
  */
 export const PAID_PLAN_PRICE_INR = 500;
+
+export function resolvePaidPlanPrice(settings: Record<string, unknown>): number {
+  const value = Number(settings.paid_plan_price_inr);
+  return Number.isFinite(value) && value > 0 ? value : PAID_PLAN_PRICE_INR;
+}
 export const PAID_PLAN_DURATION_LABEL = '1 year';
 
 export interface RegistrationPlanOption {
@@ -14,6 +20,12 @@ export interface RegistrationPlanOption {
   priceNote: string;
   tagline: string;
   features: string[];
+}
+
+export function getRegistrationPlans(paidPrice: number): RegistrationPlanOption[] {
+  return REGISTRATION_PLANS.map((plan) =>
+    plan.id === 'PAID' ? { ...plan, price: `₹${paidPrice}` } : plan,
+  );
 }
 
 export const REGISTRATION_PLANS: RegistrationPlanOption[] = [

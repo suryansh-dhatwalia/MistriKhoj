@@ -7,6 +7,7 @@ import {
   deleteAdminMistri,
   getAdminMistri,
   listAdminMistris,
+  setMistriAvailability,
   updateAdminMistri,
 } from "../controllers/admin-mistri.controller.js";
 import { changeAdminPassword, updateAdminProfile } from "../controllers/admin-profile.controller.js";
@@ -15,6 +16,8 @@ import {
   advertisementController,
   categoryController,
   cityController,
+  mistriNewsController,
+  mistriRatingController,
   planController,
   referralController,
   stateController,
@@ -22,6 +25,7 @@ import {
 } from "../controllers/content-admin.controller.js";
 import { updateAdRequestStatus } from "../controllers/ad-request.controller.js";
 import { listAuditLogs } from "../controllers/audit.controller.js";
+import { downloadDataExport } from "../controllers/export.controller.js";
 import { getReportsOverview } from "../controllers/reports.controller.js";
 import { getReferralLeadCounts, listReferralMistris } from "../controllers/referral.controller.js";
 import { listSiteSettings, updateSiteSettings } from "../controllers/settings.controller.js";
@@ -57,6 +61,7 @@ adminRouter.get("/mistris", listAdminMistris);
 adminRouter.get("/mistris/:id", getAdminMistri);
 adminRouter.patch("/mistris/:id", updateAdminMistri);
 adminRouter.patch("/mistris/:id/approve", approveMistri);
+adminRouter.patch("/mistris/:id/availability", setMistriAvailability);
 adminRouter.delete("/mistris/:id", deleteAdminMistri);
 
 adminRouter.patch("/profile", updateAdminProfile);
@@ -78,6 +83,7 @@ mountCrud("/cities", cityController);
 mountCrud("/categories", categoryController);
 mountCrud("/advertisements", advertisementController);
 mountCrud("/testimonials", testimonialController);
+mountCrud("/mistri-news", mistriNewsController);
 mountCrud("/plans", planController);
 
 // Referral resource: extra lead-count endpoints registered before the generic :id routes.
@@ -100,7 +106,18 @@ adRequestRouter.patch("/:id", updateAdRequestStatus);
 adRequestRouter.delete("/:id", adRequestController.remove);
 adminRouter.use("/ad-requests", adRequestRouter);
 
+// Mistri star ratings: public-submitted only, so no admin create route. Admin can
+// deactivate a fake/abusive rating (status -> INACTIVE, excluded from the public
+// average) or delete it outright.
+const mistriRatingRouter = Router();
+mistriRatingRouter.get("/", mistriRatingController.list);
+mistriRatingRouter.get("/:id", mistriRatingController.getOne);
+mistriRatingRouter.patch("/:id", mistriRatingController.update);
+mistriRatingRouter.delete("/:id", mistriRatingController.remove);
+adminRouter.use("/mistri-ratings", mistriRatingRouter);
+
 adminRouter.get("/reports/overview", getReportsOverview);
+adminRouter.get("/export/data", downloadDataExport);
 adminRouter.get("/audit-logs", listAuditLogs);
 adminRouter.get("/settings", listSiteSettings);
 adminRouter.patch("/settings", updateSiteSettings);

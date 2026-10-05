@@ -7,6 +7,7 @@ import {
   optionalText,
   phoneSchema,
   sortOrderSchema,
+  videoInputSchema,
 } from "./shared.js";
 
 const emptyToUndefined = (value: unknown) =>
@@ -46,6 +47,9 @@ const optionalImageInput = z.preprocess(emptyToUndefined, imageInputSchema.optio
 
 /** Creative field that may be an image or a video: https URL to keep, or base64 data URL to upload. */
 const optionalMediaInput = z.preprocess(emptyToUndefined, mediaInputSchema.optional());
+
+/** Video-only field, alongside an image field on the same record: https URL to keep, or base64 data URL to upload. */
+const optionalVideoInput = z.preprocess(emptyToUndefined, videoInputSchema.optional());
 
 const placementEnum = z.enum(["HOME_BANNER", "CATEGORY", "VIDEO"]);
 
@@ -158,6 +162,7 @@ export const testimonialSchema = z.object({
   comment: z.string().trim().min(10).max(2_000),
   displayDate: z.string().trim().min(1).max(60),
   avatar: optionalImageInput,
+  video: optionalVideoInput,
   sortOrder: sortOrderSchema.default(0),
   status: contentStatusSchema.default("ACTIVE"),
 });
@@ -167,6 +172,16 @@ export const testimonialListQuerySchema = makeListQuerySchema([
   "rating",
   "createdAt",
 ]);
+
+// --- Mistri news strip -----------------------------------------------------
+
+export const mistriNewsSchema = z.object({
+  message: z.string().trim().min(5).max(300),
+  linkUrl: httpUrlSchema(500),
+  sortOrder: sortOrderSchema.default(0),
+  status: contentStatusSchema.default("ACTIVE"),
+});
+export const mistriNewsListQuerySchema = makeListQuerySchema(["sortOrder", "createdAt"]);
 
 // --- Subscription plan ---------------------------------------------------------
 

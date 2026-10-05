@@ -33,6 +33,8 @@ export interface Mistri {
   featuredUntil?: string | null;
   /** True while this Mistri currently holds the paid top slot for their area. */
   slotActive?: boolean;
+  /** False when an admin has temporarily hidden this Mistri from the public site. */
+  isActive?: boolean;
 }
 
 export interface MistriQueryParams {

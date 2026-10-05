@@ -13,7 +13,8 @@ import {
   Typography,
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
-import { settingsApi } from '../api/content.api';
+import DownloadIcon from '@mui/icons-material/Download';
+import { exportApi, settingsApi } from '../api/content.api';
 import type { SiteSetting } from '../types/content.types';
 import { parseApiError } from '../utils/error.utils';
 import { ErrorAlert } from '../components/common/ErrorAlert';
@@ -27,6 +28,7 @@ export const SettingsPage: React.FC = () => {
   const [draft, setDraft] = useState<Record<string, DraftValue>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [error, setError] = useState<{ message: string; isNetworkError: boolean } | null>(null);
   const [toast, setToast] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
     open: false,
@@ -77,6 +79,17 @@ export const SettingsPage: React.FC = () => {
     return draft[setting.key] !== original;
   });
 
+  const downloadExport = async () => {
+    setExporting(true);
+    try {
+      await exportApi.downloadData();
+    } catch (err) {
+      setToast({ open: true, message: parseApiError(err).message, severity: 'error' });
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const save = async () => {
     setSaving(true);
     try {
@@ -122,6 +135,28 @@ export const SettingsPage: React.FC = () => {
           {saving ? <CircularProgress size={20} color="inherit" /> : 'Save changes'}
         </Button>
       </Box>
+
+      <Card sx={{ p: 3, mb: 3 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+          <Box>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+              Download all data
+            </Typography>
+            <Typography variant="body2" sx={{ color: brandColors.textSecondary }}>
+              Excel file with every Mistri (with plan), advertisement and ad request. Opens in Excel or Google Sheets. A copy is
+              also saved on the server automatically every 15 days.
+            </Typography>
+          </Box>
+          <Button
+            variant="outlined"
+            startIcon={exporting ? <CircularProgress size={18} /> : <DownloadIcon />}
+            disabled={exporting}
+            onClick={downloadExport}
+          >
+            Download Excel
+          </Button>
+        </Box>
+      </Card>
 
       {error && <ErrorAlert title="Could not load settings" message={error.message} isNetworkError={error.isNetworkError} onRetry={load} />}
       {loading && <CardGridSkeleton count={2} />}
