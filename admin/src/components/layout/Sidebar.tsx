@@ -235,7 +235,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           />
         </Box>
         {!collapsed && (
-          <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+          <Box sx={{ display: { xs: 'none', lg: 'block' } }}>
             <IconButton size="small" onClick={onToggleCollapse} sx={{ color: '#9CA3AF', '&:hover': { color: brandColors.white } }}>
               <ChevronLeftIcon />
             </IconButton>
@@ -336,7 +336,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <Box
       component="nav"
-      sx={{ width: { md: collapsed ? COLLAPSED_DRAWER_WIDTH : DRAWER_WIDTH }, flexShrink: { md: 0 }, transition: 'width 0.2s ease-in-out' }}
+      sx={{ width: { lg: collapsed ? COLLAPSED_DRAWER_WIDTH : DRAWER_WIDTH }, flexShrink: { lg: 0 }, transition: 'width 0.2s ease-in-out' }}
       aria-label="Admin navigation"
     >
       <Drawer
@@ -345,7 +345,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         onClose={onMobileClose}
         ModalProps={{ keepMounted: true }}
         sx={{
-          display: { xs: 'block', md: 'none' },
+          display: { xs: 'block', lg: 'none' },
           '& .MuiDrawer-paper': { boxSizing: 'border-box', width: DRAWER_WIDTH, borderRight: 'none' },
         }}
       >
@@ -356,7 +356,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         variant="permanent"
         open
         sx={{
-          display: { xs: 'none', md: 'block' },
+          display: { xs: 'none', lg: 'block' },
           '& .MuiDrawer-paper': {
             boxSizing: 'border-box',
             width: collapsed ? COLLAPSED_DRAWER_WIDTH : DRAWER_WIDTH,

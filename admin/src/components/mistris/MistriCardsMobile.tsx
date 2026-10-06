@@ -34,6 +34,7 @@ interface MistriCardsMobileProps {
   onToggleAvailability?: (mistri: Mistri) => void;
   onRejectOrDelete: (mistri: Mistri) => void;
   isPendingTable?: boolean;
+  hidePagination?: boolean;
 }
 
 export const MistriCardsMobile: React.FC<MistriCardsMobileProps> = ({
@@ -48,6 +49,7 @@ export const MistriCardsMobile: React.FC<MistriCardsMobileProps> = ({
   onToggleAvailability,
   onRejectOrDelete,
   isPendingTable = false,
+  hidePagination = false,
 }) => {
   const totalPages = Math.ceil(total / pageSize) || 1;
 
@@ -202,6 +204,7 @@ export const MistriCardsMobile: React.FC<MistriCardsMobileProps> = ({
       ))}
 
       {/* Mobile Pagination */}
+      {!hidePagination && (
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2, mb: 1 }}>
         <Pagination
           count={totalPages}
@@ -211,6 +214,7 @@ export const MistriCardsMobile: React.FC<MistriCardsMobileProps> = ({
           color="primary"
         />
       </Box>
+      )}
     </Box>
   );
 };

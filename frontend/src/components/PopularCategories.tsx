@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Zap, 
   Droplet, 
@@ -12,7 +12,8 @@ import {
   Wrench,
   ArrowRight,
   Sparkle,
-  Truck
+  Truck,
+  ChevronDown
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useContent } from '../context/ContentContext';
@@ -24,6 +25,9 @@ interface PopularCategoriesProps {
 export const PopularCategories: React.FC<PopularCategoriesProps> = ({ onSelectCategory }) => {
   const { t } = useLanguage();
   const { categories: SERVICE_CATEGORIES } = useContent();
+  const [showAll, setShowAll] = useState(false);
+  const INITIAL_COUNT = 8;
+  const visibleCategories = showAll ? SERVICE_CATEGORIES : SERVICE_CATEGORIES.slice(0, INITIAL_COUNT);
 
   const getCategoryIcon = (iconName: string) => {
     switch (iconName) {
@@ -64,7 +68,7 @@ export const PopularCategories: React.FC<PopularCategoriesProps> = ({ onSelectCa
 
         {/* Categories Grid (2 rows x 4 cols on desktop) */}
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4">
-          {SERVICE_CATEGORIES.map((cat) => (
+          {visibleCategories.map((cat) => (
             <div
               key={cat.id}
               onClick={() => {
@@ -99,6 +103,20 @@ export const PopularCategories: React.FC<PopularCategoriesProps> = ({ onSelectCa
             </div>
           ))}
         </div>
+
+        {SERVICE_CATEGORIES.length > INITIAL_COUNT && (
+          <div className="mt-8 flex justify-center">
+            <button
+              type="button"
+              onClick={() => setShowAll((prev) => !prev)}
+              aria-expanded={showAll}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-black text-[#FFB800] text-xs font-black uppercase tracking-wider hover:bg-[#1f1f1f] transition-colors cursor-pointer"
+            >
+              {showAll ? t('cat_show_less', 'Show Less') : t('cat_show_more', 'Show More')}
+              <ChevronDown className={`w-4 h-4 transition-transform ${showAll ? 'rotate-180' : ''}`} />
+            </button>
+          </div>
+        )}
 
       </div>
     </section>

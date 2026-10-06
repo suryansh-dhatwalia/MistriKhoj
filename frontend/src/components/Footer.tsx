@@ -2,7 +2,6 @@ import React from 'react';
 import {
   ShieldCheck,
   ArrowRight,
-  Phone,
   HardHat
 } from 'lucide-react';
 import { useContent } from '../context/ContentContext';
@@ -57,13 +56,6 @@ export const Footer: React.FC<FooterProps> = ({
               >
                 {t('nav_register_mistri', 'Register Mistri')}
               </button>
-              <a
-                href="tel:+918453246244"
-                className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-xs font-bold text-white transition-colors flex items-center gap-1.5"
-              >
-                <Phone className="w-3.5 h-3.5 text-[#FFB800]" />
-                <span>{t('footer_helpline', 'Call Helpline')}</span>
-              </a>
             </div>
           </div>
 
@@ -125,14 +117,6 @@ export const Footer: React.FC<FooterProps> = ({
               {t('footer_safety_title', 'Safety & Verification')}
             </h4>
             <ul className="space-y-2 text-xs text-gray-400">
-              <li className="flex items-start gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-[#FFB800] shrink-0 mt-0.5" />
-                <span>{t('footer_aadhaar_check', 'Aadhaar Identity Proofs')}</span>
-              </li>
-              <li className="flex items-start gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-[#FFB800] shrink-0 mt-0.5" />
-                <span>{t('footer_police_check', 'Local Police Verification')}</span>
-              </li>
               <li className="flex items-start gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-[#FFB800] shrink-0 mt-0.5" />
                 <span>{t('footer_rate_cards', 'Standardized Rate Cards')}</span>

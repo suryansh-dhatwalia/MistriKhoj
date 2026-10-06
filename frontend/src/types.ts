@@ -65,7 +65,6 @@ export interface Technician {
   badgeLevel: 'Gold Master' | 'Silver Pro' | 'Platinum Partner' | 'Standard Verified' | 'New Registration';
   startingPrice: number;
   completedJobs: number;
-  policeVerified: boolean;
   skillTestCertified: boolean;
   memberSince: string;
   /** Subscription plan of the underlying registration. */

@@ -1,6 +1,6 @@
 import { ServiceCategory } from '../types';
 
-export const SERVICE_CATEGORIES: ServiceCategory[] = [
+const FEATURED_CATEGORIES: ServiceCategory[] = [
   {
     id: 'electrician',
     name: 'Electrician',
@@ -172,3 +172,86 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
     ]
   }
 ];
+
+type AdditionalCategory = { id: string; name: string };
+
+const ADDITIONAL_ACTIVE_CATEGORIES: AdditionalCategory[] = [
+  { id: 'carpenter', name: 'Carpenter' },
+  { id: 'civil-contractor', name: 'Civil Contractor' },
+  { id: 'electrician', name: 'Electrician' },
+  { id: 'cc-camera-and-security-devices', name: 'CC Camera & Security Devices' },
+  { id: 'ac-repair', name: 'AC Repair' },
+  { id: 'tv-and-home-theater-repair-music-system-speakers', name: 'TV & Home Theater Repair (Music System, Speakers)' },
+  { id: 'plumber', name: 'Plumber' },
+  { id: 'painter-trade', name: 'Painter' },
+  { id: 'car-mechanic', name: 'Car Mechanic' },
+  { id: 'bike-scooty-bullet-mechanic', name: 'Bike/ Scooty/Bullet Mechanic' },
+  { id: 'welder', name: 'Welder' },
+  { id: 'inverter-and-battery-mechanic', name: 'Inverter and Battery Mechanic' },
+  { id: 'desktop-laptop-technician', name: 'Desktop, Laptop Technician' },
+  { id: 'printer-technician', name: 'Printer Technician' },
+  { id: 'digital-and-slr-camera', name: 'Digital & SLR Camera' },
+  { id: 'tiles-mistri', name: 'Tiles Mistri' },
+  { id: 'raaj-mistri', name: 'Raaj Mistri' },
+  { id: 'raj-mistri-bengali', name: 'রাজ মিস্ত্রি' },
+  { id: 'mobile-and-tab-repair', name: 'Mobile & Tab Repair' },
+  { id: 'interior-designer', name: 'Interior Designer' },
+  { id: 'shutter-repair', name: 'Shutter Repair' },
+  { id: 'revolving-chair-repair', name: 'Revolving Chair Repair' },
+  { id: 'lan-networking-wifi', name: 'Lan, Networking, WIFI' },
+  { id: 'curtain-and-drapery-repair', name: 'Curtain & Drapery Repair' },
+  { id: 'wallpapering-services', name: 'Wallpapering Services' },
+  { id: 'water-purifier-ro-repair', name: 'Water Purifier - RO Repair' },
+  { id: 'geyser-mechanic', name: 'Geyser Mechanic' },
+  { id: 'washing-machine-and-refrigerator-technician', name: 'Washing Machine & Refrigerator Technician' },
+  { id: 'aluminium-section-and-steel-expert', name: 'Aluminium Section & Steel Expert' },
+  { id: 'photo-copy-machine-technician-xerox', name: 'Photo Copy Machine Technician (Xerox)' },
+  { id: 'upvc-windows-and-door-manufacturer', name: 'UPVC Windows & Door Manufacturer' },
+  { id: 'car-designer', name: 'Car Designer' },
+  { id: 'projector-repair', name: 'Projector Repair' },
+  { id: 'roof-fitting-expert', name: 'Roof Fitting Expert' },
+  { id: 'interactive-digital-board-expert', name: 'Interactive Digital Board Expert' },
+  { id: 'winding-works-technician-expert', name: 'Winding Works Technician / Expert' },
+  { id: 'weighing-machine-expert', name: 'Weighing Machine Expert' },
+  { id: 'water-treatment-plant', name: 'Water Treatment Plant' },
+  { id: 'swiming-pool-expert', name: 'Swiming Pool Expert' },
+  { id: 'solar-expert', name: 'Solar Expert' },
+  { id: 'water-fountain-mechanic', name: 'Water Fountain Mechanic' },
+  { id: 'wheel-balancing-alighnment-expert', name: 'Wheel Balancing Alighnment Expert' },
+  { id: 'generator-repair', name: 'Generator Repair' },
+  { id: 'treadmill-technician', name: 'Treadmill Technician' },
+  { id: 'cycle-mechanic', name: 'Cycle Mechanic' },
+  { id: 'cobler', name: 'COBLER' },
+  { id: 'sofa-manufacturing-and-repair', name: 'Sofa Manufacturing & Repair' },
+  { id: 'car-bike-gps-and-android-player-expert', name: 'CAR/BIKE GPS & ANDROID PLAYER EXPERT' },
+  { id: 'ups-repair-technician', name: 'Ups Repair Technician' },
+  { id: 'mochi-cobbler', name: 'MOCHI COBBLER' },
+  { id: 'welder-fabrication', name: 'Welder & fabrication' },
+  { id: 'transformer-repairing-technician', name: 'Transformer repairing Technician' },
+  { id: 'vending-tea-and-cofee-machine-repair', name: 'Vending Tea & cofee machine repair' },
+  { id: 'ceiling-mistri', name: 'Ceiling mistri' },
+  { id: 'truck-mechanic-hmv', name: 'Truck mechanic HMV' },
+  { id: 'chimney', name: 'Chimney' },
+  { id: 'cloth', name: 'Tailor' },
+  { id: 'computer-mobile-repair', name: 'Computer & Mobile Repair' },
+];
+
+const categoryKey = (name: string) => name.trim().replace(/\s+/g, ' ').toLocaleLowerCase('en-IN');
+const categoryNames = new Set(FEATURED_CATEGORIES.map((category) => categoryKey(category.name)));
+
+export const SERVICE_CATEGORIES: ServiceCategory[] = [...FEATURED_CATEGORIES];
+for (const category of ADDITIONAL_ACTIVE_CATEGORIES) {
+  const key = categoryKey(category.name);
+  if (categoryNames.has(key)) continue;
+  categoryNames.add(key);
+  SERVICE_CATEGORIES.push({
+    id: category.id,
+    name: category.name,
+    hindiName: category.name,
+    iconName: 'Wrench',
+    description: `${category.name} services from local professionals.`,
+    avgResponseTime: 'Contact provider',
+    techniciansAvailable: 0,
+    popularServices: [],
+  });
+}

@@ -234,22 +234,6 @@ export const TechnicianModal: React.FC<TechnicianModalProps> = ({
                 <div className="p-2.5 rounded-xl bg-white border border-[#EAE3D6] flex items-center gap-2 text-[#161616]">
                   <CheckCircle2 className="w-4 h-4 text-[#4C5943] shrink-0" />
                   <div>
-                    <div className="font-semibold">{t('modal_govt_id', 'Government ID Checked')}</div>
-                    <div className="text-[10px] text-[#161616]/60">{t('modal_govt_id_desc', 'Aadhaar & PAN authenticated')}</div>
-                  </div>
-                </div>
-
-                <div className="p-2.5 rounded-xl bg-white border border-[#EAE3D6] flex items-center gap-2 text-[#161616]">
-                  <CheckCircle2 className="w-4 h-4 text-[#4C5943] shrink-0" />
-                  <div>
-                    <div className="font-semibold">{t('modal_police_check', 'Police Background Clear')}</div>
-                    <div className="text-[10px] text-[#161616]/60">{t('modal_police_check_desc', 'No adverse record logged')}</div>
-                  </div>
-                </div>
-
-                <div className="p-2.5 rounded-xl bg-white border border-[#EAE3D6] flex items-center gap-2 text-[#161616]">
-                  <CheckCircle2 className="w-4 h-4 text-[#4C5943] shrink-0" />
-                  <div>
                     <div className="font-semibold">{t('modal_skills_assessed', 'Skill & Tools Assessed')}</div>
                     <div className="text-[10px] text-[#161616]/60">{t('modal_skills_assessed_desc', 'Field tested on safety standards')}</div>
                   </div>

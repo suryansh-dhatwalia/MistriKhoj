@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { 
-  Phone, 
   Mail, 
   MessageSquare, 
   MapPin, 
@@ -41,7 +40,7 @@ export const ContactSection: React.FC = () => {
     },
     {
       q: t('faq_2_q', 'How does MistriKhoj verify technicians and ensure home safety?'),
-      a: t('faq_2_a', 'Every registered mistri submits their Government Aadhaar card, trade certificate or ITI license, and local police verification. Only technicians passing our strict 4-Pillar Verification Matrix receive the active Verified Ustad badge.')
+      a: t('faq_2_a', 'Every registration is reviewed by our admin team before it goes live. Only approved technicians appear in the public directory.')
     },
     {
       q: t('faq_3_q', 'Which states and cities are currently covered?'),
@@ -95,20 +94,7 @@ export const ContactSection: React.FC = () => {
           <div className="lg:col-span-6 space-y-5">
             
             {/* Quick Contact Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <a
-                href="tel:+918453246244"
-                className="p-4 rounded-xl bg-white border-2 border-gray-200 hover:border-black transition-all flex items-center gap-3 group shadow-sm"
-              >
-                <div className="w-10 h-10 rounded-xl bg-black text-[#FFB800] flex items-center justify-center shrink-0">
-                  <Phone className="w-4 h-4" />
-                </div>
-                <div>
-                  <div className="text-[11px] text-gray-500 font-semibold">{t('contact_toll_free', 'Toll-Free Helpline')}</div>
-                  <div className="text-xs font-black text-black">+91 84532 46244</div>
-                </div>
-              </a>
-
+            <div className="grid grid-cols-1 gap-3">
               <a
                 href={`https://wa.me/${whatsappDigits}?text=Hello%20MistriKhoj,%20I%20need%20assistance%20finding%20a%20technician`}
                 target="_blank"

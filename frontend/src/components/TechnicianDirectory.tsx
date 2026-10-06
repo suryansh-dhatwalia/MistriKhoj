@@ -82,7 +82,14 @@ export const TechnicianDirectory: React.FC<TechnicianDirectoryProps> = ({
         // City check
         if (selectedCity !== 'All' && tech.city !== selectedCity) return false;
         // Category check
-        if (selectedCategory !== 'All' && !tech.category.toLowerCase().includes(selectedCategory.toLowerCase())) return false;
+        if (selectedCategory !== 'All') {
+          const selectedCategoryKey = selectedCategory.trim().toLocaleLowerCase('en-IN');
+          const matchesPrimaryCategory = tech.category.trim().toLocaleLowerCase('en-IN') === selectedCategoryKey;
+          const matchesOfferedCategory = tech.servicesOffered.some(
+            (service) => service.trim().toLocaleLowerCase('en-IN') === selectedCategoryKey,
+          );
+          if (!matchesPrimaryCategory && !matchesOfferedCategory) return false;
+        }
         // Experience check
         if (tech.experienceYears < minExperience) return false;
         // Gold / Platinum Partner filter
@@ -242,7 +249,7 @@ export const TechnicianDirectory: React.FC<TechnicianDirectoryProps> = ({
                         className="w-16 h-16 rounded-xl object-cover border border-gray-200 bg-gray-100"
                       />
                       {tech.isVerified && (
-                        <div className="absolute -bottom-1 -right-1 bg-black text-[#FFB800] rounded-full p-0.5 shadow-sm" title="Police & Skill Verified">
+                        <div className="absolute -bottom-1 -right-1 bg-black text-[#FFB800] rounded-full p-0.5 shadow-sm" title="Verified">
                           <ShieldCheck className="w-3.5 h-3.5" />
                         </div>
                       )}

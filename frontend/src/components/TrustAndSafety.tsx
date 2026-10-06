@@ -62,7 +62,7 @@ export const TrustAndSafety: React.FC = () => {
             </div>
           </div>
 
-          {/* Card 2: 100% Aadhaar & Background Checked (Top Right - 5 cols) */}
+          {/* Card 2: Admin-Approved Profiles (Top Right - 5 cols) */}
           <div className="lg:col-span-5 p-6 sm:p-8 rounded-2xl bg-[#0D0F12] text-white flex flex-col justify-between border-2 border-black relative overflow-hidden shadow-sm">
             <div className="absolute top-0 right-0 w-32 h-32 bg-[#FFB800]/10 rounded-full blur-2xl pointer-events-none"></div>
 
@@ -70,14 +70,11 @@ export const TrustAndSafety: React.FC = () => {
               <div className="w-12 h-12 rounded-xl bg-[#FFB800] text-black flex items-center justify-center mb-6">
                 <ShieldCheck className="w-6 h-6 stroke-[2.5]" />
               </div>
-              <span className="text-[10px] font-black text-[#FFB800] uppercase tracking-widest block mb-1">
-                {t('trust_card1_title', 'Background Checked')}
-              </span>
               <h3 className="font-display text-xl sm:text-2xl font-black tracking-tight text-white mb-3">
-                {t('trust_card1_title', 'Aadhaar KYC Certified')}
+                {t('trust_card1_title', 'Admin-Approved Profiles')}
               </h3>
               <p className="text-xs sm:text-sm text-gray-400 leading-relaxed">
-                {t('trust_card1_desc', 'Every listed technician submits government identity proof and address verification.')}
+                {t('trust_card1_desc', 'Every technician profile is reviewed by our team before it appears in the directory.')}
               </p>
             </div>
 

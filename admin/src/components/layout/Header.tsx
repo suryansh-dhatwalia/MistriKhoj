@@ -123,7 +123,7 @@ export const Header: React.FC<HeaderProps> = ({
               aria-label="open drawer"
               edge="start"
               onClick={onMobileToggle}
-              sx={{ display: { md: 'none' }, color: '#6B7280' }}
+              sx={{ display: { lg: 'none' }, color: '#6B7280' }}
             >
               <MenuIcon />
             </IconButton>
@@ -135,7 +135,7 @@ export const Header: React.FC<HeaderProps> = ({
                 onClick={onToggleCollapse}
                 aria-label="expand sidebar"
                 sx={{
-                  display: { xs: 'none', md: 'inline-flex' },
+                  display: { xs: 'none', lg: 'inline-flex' },
                   color: '#6B7280',
                   border: `1px solid ${brandColors.border}`,
                   borderRadius: 1,

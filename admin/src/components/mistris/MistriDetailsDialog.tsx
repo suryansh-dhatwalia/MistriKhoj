@@ -12,6 +12,8 @@ import {
   Divider,
   IconButton,
   Tooltip,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
@@ -48,6 +50,8 @@ export const MistriDetailsDialog: React.FC<MistriDetailsDialogProps> = ({
   onApprove,
   onRejectOrDelete,
 }) => {
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
   const [selectedGalleryImage, setSelectedGalleryImage] = useState<string | null>(null);
 
   if (!mistri) return null;
@@ -61,6 +65,7 @@ export const MistriDetailsDialog: React.FC<MistriDetailsDialogProps> = ({
         onClose={onClose}
         maxWidth="md"
         fullWidth
+        fullScreen={fullScreen}
         aria-labelledby="mistri-details-title"
       >
         <DialogTitle
@@ -104,7 +109,7 @@ export const MistriDetailsDialog: React.FC<MistriDetailsDialogProps> = ({
           </IconButton>
         </DialogTitle>
 
-        <DialogContent sx={{ p: 3 }}>
+        <DialogContent sx={{ p: { xs: 2, sm: 3 } }}>
           {/* Header Card: Photo, Name, Contact, Status */}
           <Box
             sx={{

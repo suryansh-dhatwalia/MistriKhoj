@@ -27,7 +27,7 @@ import { brandColors } from '../theme/theme';
 
 export const PendingMistrisPage: React.FC = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
 
   // Data states
   const [mistris, setMistris] = useState<Mistri[]>([]);

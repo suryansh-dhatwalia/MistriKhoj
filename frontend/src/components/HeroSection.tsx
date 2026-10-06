@@ -117,7 +117,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
             {/* Subtitle Description */}
             <p className="text-base sm:text-lg text-gray-700 max-w-xl font-normal leading-relaxed">
-              {t('hero_subheadline', 'Find 15,000+ Aadhaar & police background checked local master craftsmen across {count} Indian states. Direct phone & WhatsApp calling.', { count: stateCount })}
+              {t('hero_subheadline', 'Find 15,000+ local master craftsmen across {count} Indian states. Direct phone & WhatsApp calling.', { count: stateCount })}
             </p>
 
             {/* Unified Search & Advanced Filter Box */}
@@ -283,7 +283,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-xs sm:text-sm font-semibold text-gray-700 pt-1">
               <div className="flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-gray-900 shrink-0" />
-                <span>{t('trust_card1_title', 'Aadhaar KYC Certified')}</span>
+                <span>{t('trust_card1_title', 'Admin-Approved Profiles')}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Tag className="w-4 h-4 text-gray-900 shrink-0" />
@@ -374,54 +374,35 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 </div>
               </div>
 
-              {/* Center Technician Montage Photo */}
-              <div className="relative w-full h-full flex items-end justify-center pt-16 z-10">
-                <div className="relative w-full max-w-[500px] h-[380px] sm:h-[450px] flex items-end justify-center">
+              {/* Mascot Hero Visual */}
+              <div className="relative w-full flex-1 flex items-end justify-center pt-20 z-10">
+                <div className="relative w-full max-w-[460px] h-[400px] sm:h-[470px] flex items-end justify-center">
 
-                  {/* Left Plumber Worker Cutout */}
-                  <div className="absolute left-2 sm:left-4 bottom-0 w-[42%] z-10 group">
-                    <img
-                      src="https://images.unsplash.com/photo-1540569014015-19a7be504e3a?auto=format&fit=crop&w=600&q=80"
-                      alt="MistriKhoj Plumber"
-                      className="w-full h-full object-cover object-top drop-shadow-[0_10px_15px_rgba(0,0,0,0.3)] filter contrast-105"
-                      style={{ clipPath: 'polygon(0 15%, 100% 0, 100% 100%, 0 100%)' }}
-                    />
-                    <div className="absolute top-1/4 -left-2 px-2 py-0.5 bg-white border border-black rounded text-[9px] font-black uppercase tracking-wider text-black shadow">
-                      {t('cat_plumber', 'PLUMBING')}
-                    </div>
+                  {/* Sunburst + solid circle behind the mascot */}
+                  <div className="absolute left-1/2 bottom-6 -translate-x-1/2 w-[92%] aspect-square rounded-full bg-black"></div>
+                  <div className="absolute left-1/2 bottom-6 -translate-x-1/2 w-[92%] aspect-square rounded-full border-[3px] border-dashed border-[#FFB800]/60 scale-[1.08]"></div>
+                  <div className="absolute left-1/2 bottom-6 -translate-x-1/2 w-[80%] aspect-square rounded-full bg-[#FFB800]/15"></div>
+
+                  <img
+                    src="/mistri-mascot.png"
+                    alt="MistriKhoj Mistri"
+                    className="relative z-20 w-[86%] h-auto object-contain drop-shadow-[0_18px_22px_rgba(0,0,0,0.45)]"
+                    style={{ clipPath: 'polygon(20% 0, 78% 0, 78% 10%, 100% 10%, 100% 100%, 0 100%, 0 10%, 20% 10%)' }}
+                  />
+
+                  {/* Floating trade chips */}
+                  <div className="absolute z-30 top-[14%] left-0 sm:-left-2 px-3 py-1.5 bg-white border-2 border-black rounded-full shadow-lg flex items-center gap-1.5 text-[10px] sm:text-xs font-black uppercase tracking-wider text-black -rotate-6">
+                    <Zap className="w-3.5 h-3.5 text-[#FFB800] fill-[#FFB800]" />
+                    <span>{t('cat_electrician', 'ELECTRICIAN')}</span>
                   </div>
-
-                  {/* Right Painter Worker Cutout */}
-                  <div className="absolute right-2 sm:right-4 bottom-0 w-[42%] z-10 group">
-                    <img
-                      src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=600&q=80"
-                      alt="MistriKhoj Painter"
-                      className="w-full h-full object-cover object-top drop-shadow-[0_10px_15px_rgba(0,0,0,0.3)] filter contrast-105"
-                      style={{ clipPath: 'polygon(0 0, 100% 15%, 100% 100%, 0 100%)' }}
-                    />
-                    <div className="absolute top-1/4 -right-2 px-2 py-0.5 bg-white border border-black rounded text-[9px] font-black uppercase tracking-wider text-black shadow">
-                      {t('cat_painter', 'PAINTING')}
-                    </div>
+                  <div className="absolute z-30 top-[38%] right-0 sm:-right-2 px-3 py-1.5 bg-white border-2 border-black rounded-full shadow-lg flex items-center gap-1.5 text-[10px] sm:text-xs font-black uppercase tracking-wider text-black rotate-6">
+                    <Droplet className="w-3.5 h-3.5 text-sky-500 fill-sky-400" />
+                    <span>{t('cat_plumber', 'PLUMBING')}</span>
                   </div>
-
-                  {/* Center Electrician Master Ustad */}
-                  <div className="relative z-20 w-[58%] sm:w-[60%] flex flex-col items-center">
-                    <div className="relative">
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-30 px-2 py-0.5 bg-[#FFB800] border-2 border-black rounded-full shadow-md flex items-center gap-1 text-[9px] font-black text-black">
-                        <svg viewBox="0 0 24 24" className="w-3 h-3 text-black fill-current">
-                          <path d="M12 2L2 10.5V21C2 21.5523 2.44772 22 3 22H21C21.5523 22 22 21.5523 22 21V10.5L12 2ZM12 5.5L18.5 11V20H15V13.5L12 16.2L9 13.5V20H5.5V11L12 5.5Z" />
-                        </svg>
-                        <span>MISTRIKHOJ</span>
-                      </div>
-
-                      <img
-                        src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80"
-                        alt="Master Electrician Mistri"
-                        className="w-full h-auto object-cover object-top drop-shadow-[0_15px_25px_rgba(0,0,0,0.4)] rounded-t-full border-t-4 border-l-2 border-r-2 border-black"
-                      />
-                    </div>
+                  <div className="absolute z-30 top-[56%] left-0 sm:-left-2 px-3 py-1.5 bg-white border-2 border-black rounded-full shadow-lg flex items-center gap-1.5 text-[10px] sm:text-xs font-black uppercase tracking-wider text-black rotate-3 max-[400px]:hidden">
+                    <Paintbrush className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>{t('cat_painter', 'PAINTING')}</span>
                   </div>
-
                 </div>
               </div>
 
@@ -436,26 +417,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   </div>
 
                   <div className="flex items-center -space-x-2 pt-1">
-                    <img
-                      src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
-                      alt="Customer 1"
-                      className="w-6 h-6 rounded-full border-2 border-white object-cover"
-                    />
-                    <img
-                      src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&auto=format&fit=crop&q=80"
-                      alt="Customer 2"
-                      className="w-6 h-6 rounded-full border-2 border-white object-cover"
-                    />
-                    <img
-                      src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop&q=80"
-                      alt="Customer 3"
-                      className="w-6 h-6 rounded-full border-2 border-white object-cover"
-                    />
-                    <img
-                      src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80"
-                      alt="Customer 4"
-                      className="w-6 h-6 rounded-full border-2 border-white object-cover"
-                    />
+                    <div className="w-6 h-6 rounded-full border-2 border-white bg-[#FFB800] flex items-center justify-center"><Zap className="w-3 h-3 text-black" /></div>
+                    <div className="w-6 h-6 rounded-full border-2 border-white bg-sky-300 flex items-center justify-center"><Droplet className="w-3 h-3 text-black" /></div>
+                    <div className="w-6 h-6 rounded-full border-2 border-white bg-orange-300 flex items-center justify-center"><Hammer className="w-3 h-3 text-black" /></div>
+                    <div className="w-6 h-6 rounded-full border-2 border-white bg-emerald-300 flex items-center justify-center"><Paintbrush className="w-3 h-3 text-black" /></div>
                     <div className="w-6 h-6 rounded-full bg-black text-[#FFB800] border-2 border-white flex items-center justify-center text-[8px] font-bold">
                       50K+
                     </div>

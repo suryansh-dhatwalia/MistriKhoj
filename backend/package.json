@@ -16,7 +16,9 @@
     "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
     "admin:create": "tsx src/scripts/create-admin.ts",
-    "content:seed": "tsx src/scripts/seed-content.ts"
+    "content:seed": "tsx src/scripts/seed-content.ts",
+    "categories:sync": "tsx src/scripts/sync-categories.ts",
+    "categories:reconcile-mistris": "tsx src/scripts/reconcile-legacy-mistri-categories.ts"
   },
   "keywords": [],
   "author": "",

@@ -33,7 +33,7 @@ export const HowItWorks: React.FC<HowItWorksProps> = ({ onRegisterClick }) => {
     {
       step: '02',
       title: t('how_step2_title', '2. Review ID & Past Work'),
-      description: t('how_step2_desc', 'Check customer ratings, experience years, Aadhaar badges, and previous installation photos.'),
+      description: t('how_step2_desc', 'Check customer ratings, experience years, and previous installation photos.'),
       icon: ShieldCheck,
       highlight: t('how_hl_bg_checked', '100% Background Checked')
     },
@@ -56,7 +56,7 @@ export const HowItWorks: React.FC<HowItWorksProps> = ({ onRegisterClick }) => {
     },
     {
       step: '02',
-      title: t('how_step2_mistri_title', '2. Get KYC Verified'),
+      title: t('how_step2_mistri_title', '2. Get Your Profile Approved'),
       description: t('how_step2_mistri_desc', 'Receive your official MistriKhoj Digital Identity Card and Gold Master badge.'),
       icon: Award,
       highlight: t('how_hl_verified_id', 'Verified ID Card')

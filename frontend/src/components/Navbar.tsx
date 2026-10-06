@@ -183,7 +183,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     )}
                   </div>
 
-                  <div className="py-1">
+                  <div className="max-h-[70vh] overflow-y-auto py-1">
                     {SERVICE_CATEGORIES.map(
                       (category) => (
                         <button

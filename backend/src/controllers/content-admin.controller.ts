@@ -1,3 +1,4 @@
+import { Prisma } from "../../generated/prisma/client.js";
 import { createCrudController } from "../lib/crud-controller.js";
 import { prisma } from "../lib/prisma.js";
 import {
@@ -196,9 +197,54 @@ export const categoryController = createCrudController({
   searchableFields: ["name", "slug"],
   defaultOrderBy: [{ sortOrder: "asc" }, { name: "asc" }],
   existingSelectForWrite: { id: true, name: true },
-  beforeDelete: blockDeleteWhenReferenced("category", (existing) =>
-    prisma.mistri.count({ where: { category: String(existing.name) } }),
-  ),
+  beforeDelete: blockDeleteWhenReferenced("category", async (existing) => {
+    const categoryName = String(existing.name);
+    const mistris = await prisma.mistri.findMany({
+      select: { category: true, servicesOffered: true },
+    });
+    return mistris.filter(
+      (mistri) =>
+        mistri.category === categoryName ||
+        (Array.isArray(mistri.servicesOffered) && mistri.servicesOffered.includes(categoryName)),
+    ).length;
+  }),
+  onAfterUpdate: async (updated, previous) => {
+    const previousName = String(previous.name);
+    const updatedName = String(updated.name);
+    if (previousName === updatedName) return;
+    const mistris = await prisma.mistri.findMany({
+      select: { id: true, category: true, servicesOffered: true },
+    });
+    const mistriUpdates = mistris.flatMap((mistri) => {
+      const services = Array.isArray(mistri.servicesOffered)
+        ? mistri.servicesOffered.map((service) => (service === previousName ? updatedName : service))
+        : mistri.servicesOffered;
+      const primaryChanged = mistri.category === previousName;
+      const servicesChanged =
+        Array.isArray(mistri.servicesOffered) && mistri.servicesOffered.some((service) => service === previousName);
+      if (!primaryChanged && !servicesChanged) return [];
+      return [
+        prisma.mistri.update({
+          where: { id: mistri.id },
+          data: {
+            ...(primaryChanged ? { category: updatedName } : {}),
+            ...(servicesChanged ? { servicesOffered: services as Prisma.InputJsonValue } : {}),
+          },
+        }),
+      ];
+    });
+    await prisma.$transaction([
+      ...mistriUpdates,
+      prisma.mistriSubscription.updateMany({
+        where: { category: previousName },
+        data: { category: updatedName },
+      }),
+      prisma.advertisement.updateMany({
+        where: { category: previousName },
+        data: { category: updatedName },
+      }),
+    ]);
+  },
   transform: (row) => ({
     ...row,
     popularServices: Array.isArray(row.popularServices) ? row.popularServices : [],

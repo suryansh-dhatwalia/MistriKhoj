@@ -51,7 +51,6 @@ const toTechnician = (mistri: MistriListItem): Technician => ({
   badgeLevel: 'New Registration',
   startingPrice: 0,
   completedJobs: 0,
-  policeVerified: false,
   skillTestCertified: false,
   memberSince: mistri.createdAt,
   plan: mistri.plan ?? 'FREE',

@@ -26,7 +26,7 @@ import { brandColors } from '../theme/theme';
 
 export const ApprovedMistrisPage: React.FC = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
 
   // Data states
   const [mistris, setMistris] = useState<Mistri[]>([]);

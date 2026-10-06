@@ -111,7 +111,7 @@ export const AboutSection: React.FC = () => {
 
               <div className="mt-5 p-3 rounded-xl bg-[#0D0F12] text-white text-xs font-bold flex items-center gap-2">
                 <Check className="w-4 h-4 shrink-0 text-[#FFB800] stroke-[3]" />
-                <span>{t('about_verified_note', 'All listed mistris have verified physical ID & police clearances.')}</span>
+                <span>{t('about_verified_note', 'All listed mistris have verified physical ID.')}</span>
               </div>
 
             </div>

@@ -14,6 +14,8 @@ import {
   CircularProgress,
   Alert,
   MenuItem,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
@@ -36,6 +38,8 @@ export const MistriEditDialog: React.FC<MistriEditDialogProps> = ({
   onClose,
   onSuccess,
 }) => {
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
   const [formData, setFormData] = useState<UpdateMistriInput>({
     fullName: '',
     primaryPhone: '',
@@ -193,13 +197,14 @@ export const MistriEditDialog: React.FC<MistriEditDialogProps> = ({
       onClose={isSubmitting ? undefined : onClose}
       maxWidth="md"
       fullWidth
+      fullScreen={fullScreen}
       aria-labelledby="edit-mistri-title"
     >
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', minHeight: 0, flex: 1 }}>
         <DialogTitle
           id="edit-mistri-title"
           sx={{
-            p: 2.5,
+            p: { xs: 2, sm: 2.5 },
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -219,14 +224,14 @@ export const MistriEditDialog: React.FC<MistriEditDialogProps> = ({
           </IconButton>
         </DialogTitle>
 
-        <DialogContent sx={{ p: 3 }}>
+        <DialogContent sx={{ px: { xs: 2, sm: 3 }, pb: 3, pt: '24px !important' }}>
           {errorMessage && (
             <Alert severity="error" sx={{ mb: 2.5, borderRadius: 2 }}>
               {errorMessage}
             </Alert>
           )}
 
-          <Grid container spacing={2.5}>
+          <Grid container spacing={{ xs: 2, sm: 2.5 }}>
             {/* Full Name */}
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
@@ -353,7 +358,7 @@ export const MistriEditDialog: React.FC<MistriEditDialogProps> = ({
               <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
                 Services Offered
               </Typography>
-              <Box sx={{ display: 'flex', gap: 1, mb: 1.5 }}>
+              <Box sx={{ display: 'flex', gap: 1, mb: 1.5, alignItems: 'center' }}>
                 <TextField
                   size="small"
                   fullWidth
@@ -371,7 +376,7 @@ export const MistriEditDialog: React.FC<MistriEditDialogProps> = ({
                   variant="outlined"
                   onClick={handleAddService}
                   startIcon={<AddIcon />}
-                  sx={{ borderColor: brandColors.borderDark, flexShrink: 0 }}
+                  sx={{ borderColor: brandColors.borderDark, flexShrink: 0, height: 40 }}
                 >
                   Add
                 </Button>
@@ -420,7 +425,7 @@ export const MistriEditDialog: React.FC<MistriEditDialogProps> = ({
           </Grid>
         </DialogContent>
 
-        <DialogActions sx={{ p: 2.5, borderTop: `1px solid ${brandColors.border}`, gap: 1 }}>
+        <DialogActions sx={{ p: { xs: 2, sm: 2.5 }, borderTop: `1px solid ${brandColors.border}`, gap: 1 }}>
           <Button
             variant="outlined"
             onClick={onClose}

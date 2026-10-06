@@ -1,4 +1,9 @@
 import "dotenv/config";
+import {
+  CATEGORY_CATALOG_ADDITIONS,
+  categorySlug,
+  normalizeCategoryName,
+} from "../data/category-catalog.js";
 import { prisma } from "../lib/prisma.js";
 
 /**
@@ -102,7 +107,7 @@ const STATES: Array<{
   },
 ];
 
-const CATEGORIES: Array<{
+type CategorySeed = {
   slug: string;
   name: string;
   hindiName: string;
@@ -110,7 +115,10 @@ const CATEGORIES: Array<{
   description: string;
   avgResponseTime: string;
   popularServices: string[];
-}> = [
+  status?: "ACTIVE" | "INACTIVE";
+};
+
+const CATEGORIES: CategorySeed[] = [
   {
     slug: "electrician",
     name: "Electrician",
@@ -273,6 +281,23 @@ const CATEGORIES: Array<{
     ],
   },
 ];
+
+const seededCategoryNames = new Set(CATEGORIES.map((entry) => normalizeCategoryName(entry.name)));
+for (const entry of CATEGORY_CATALOG_ADDITIONS) {
+  const key = normalizeCategoryName(entry.name);
+  if (seededCategoryNames.has(key)) continue;
+  seededCategoryNames.add(key);
+  CATEGORIES.push({
+    slug: entry.slug ?? categorySlug(entry.name),
+    name: entry.name,
+    hindiName: entry.name,
+    iconName: "Wrench",
+    description: `${entry.name} services from local professionals.`,
+    avgResponseTime: "Contact provider",
+    popularServices: [],
+    status: entry.status,
+  });
+}
 
 const PLANS: Array<{
   slug: string;
@@ -525,10 +550,13 @@ async function seed(): Promise<void> {
   }
 
   for (const [index, entry] of CATEGORIES.entries()) {
-    await prisma.category.upsert({
-      where: { slug: entry.slug },
-      update: {},
-      create: {
+    const existing = await prisma.category.findFirst({
+      where: { OR: [{ slug: entry.slug }, { name: entry.name }] },
+      select: { id: true },
+    });
+    if (!existing) {
+      await prisma.category.create({
+        data: {
         slug: entry.slug,
         name: entry.name,
         hindiName: entry.hindiName,
@@ -537,8 +565,10 @@ async function seed(): Promise<void> {
         avgResponseTime: entry.avgResponseTime,
         popularServices: entry.popularServices,
         sortOrder: index,
-      },
-    });
+          status: entry.status ?? "ACTIVE",
+        },
+      });
+    }
     created.categories += 1;
   }
 

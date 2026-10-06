@@ -62,6 +62,7 @@ export const MistriTable: React.FC<MistriTableProps> = ({
         borderRadius: '4px',
         border: `1px solid ${brandColors.border}`,
         overflow: 'hidden',
+        maxWidth: '100%',
         backgroundColor: brandColors.white,
         boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
       }}

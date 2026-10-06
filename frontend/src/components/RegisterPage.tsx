@@ -336,7 +336,6 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
         badgeLevel: 'Standard Verified',
         startingPrice: 299,
         completedJobs: 0,
-        policeVerified: false,
         skillTestCertified: false,
         memberSince: savedMistri.createdAt,
         plan: formData.subscriptionPlan,
@@ -641,7 +640,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                 {/* Full Name */}
                 <div>
                   <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                    Full Name (as per Aadhaar) *
+                    Full Name *
                   </label>
                   <input
                     type="text"
@@ -1120,7 +1119,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                   id="register-terms-checkbox"
                 />
                 <span className="text-xs text-gray-800 leading-relaxed font-medium">
-                  I agree to the <strong className="text-black font-black">MistriKhoj Code of Conduct, Aadhaar Background Verification Policy, and 0% Commission Guarantee</strong>. I declare that all trade certificates, workshop address, and mobile numbers provided are genuine.
+                  I agree to the <strong className="text-black font-black">MistriKhoj Code of Conduct and 0% Commission Guarantee</strong>. I declare that all trade certificates, workshop address, and mobile numbers provided are genuine.
                 </span>
               </label>
               {errors.acceptedTerms && <p className="text-[11px] text-red-500 font-bold">{errors.acceptedTerms}</p>}

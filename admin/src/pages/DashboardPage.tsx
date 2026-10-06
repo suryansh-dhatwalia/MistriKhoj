@@ -18,6 +18,8 @@ import {
   Tooltip,
   Snackbar,
   Alert,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
@@ -38,6 +40,7 @@ import { ErrorAlert } from '../components/common/ErrorAlert';
 import { EmptyState } from '../components/common/EmptyState';
 import { SafeImage } from '../components/common/SafeImage';
 import { MistriDetailsDialog } from '../components/mistris/MistriDetailsDialog';
+import { MistriCardsMobile } from '../components/mistris/MistriCardsMobile';
 import { MistriEditDialog } from '../components/mistris/MistriEditDialog';
 import { MistriRejectDialog } from '../components/mistris/MistriRejectDialog';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
@@ -47,6 +50,8 @@ import { brandColors } from '../theme/theme';
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
 
   const [stats, setStats] = useState<DashboardStatistics | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -154,13 +159,13 @@ export const DashboardPage: React.FC = () => {
           display: 'flex',
           flexDirection: { xs: 'column', sm: 'row' },
           justifyContent: 'space-between',
-          alignItems: { xs: 'flex-start', sm: 'center' },
+          alignItems: { xs: 'stretch', sm: 'center' },
           gap: 2,
           mb: 3,
         }}
       >
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 800, color: brandColors.textPrimary }}>
+          <Typography variant="h4" sx={{ fontWeight: 800, fontSize: { xs: '1.5rem', md: '2.125rem' }, color: brandColors.textPrimary }}>
             Dashboard Overview
           </Typography>
           <Typography variant="body2" sx={{ color: brandColors.textSecondary, mt: 0.5 }}>
@@ -203,13 +208,13 @@ export const DashboardPage: React.FC = () => {
       {/* Statistics Cards */}
       {stats && (
         <>
-          <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid container spacing={{ xs: 2, md: 3 }} sx={{ mb: 4 }}>
             {/* Pending Registrations Card */}
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Grid size={{ xs: 6, md: 3 }}>
               <Card
                 elevation={0}
                 sx={{
-                  p: 3,
+                  p: { xs: 2, md: 3 },
                   borderRadius: '4px',
                   border: `1px solid ${brandColors.border}`,
                   backgroundColor: brandColors.white,
@@ -258,11 +263,11 @@ export const DashboardPage: React.FC = () => {
             </Grid>
 
             {/* Approved Mistris Card */}
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Grid size={{ xs: 6, md: 3 }}>
               <Card
                 elevation={0}
                 sx={{
-                  p: 3,
+                  p: { xs: 2, md: 3 },
                   borderRadius: '4px',
                   border: `1px solid ${brandColors.border}`,
                   backgroundColor: brandColors.white,
@@ -311,11 +316,11 @@ export const DashboardPage: React.FC = () => {
             </Grid>
 
             {/* Total Registrations Card */}
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Grid size={{ xs: 6, md: 3 }}>
               <Card
                 elevation={0}
                 sx={{
-                  p: 3,
+                  p: { xs: 2, md: 3 },
                   borderRadius: '4px',
                   border: `1px solid ${brandColors.border}`,
                   backgroundColor: brandColors.white,
@@ -364,11 +369,11 @@ export const DashboardPage: React.FC = () => {
             </Grid>
 
             {/* Registrations Today Card */}
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Grid size={{ xs: 6, md: 3 }}>
               <Card
                 elevation={0}
                 sx={{
-                  p: 3,
+                  p: { xs: 2, md: 3 },
                   borderRadius: '4px',
                   border: `1px solid ${brandColors.border}`,
                   backgroundColor: brandColors.white,
@@ -421,7 +426,7 @@ export const DashboardPage: React.FC = () => {
           <Paper
             elevation={0}
             sx={{
-              p: 3,
+              p: { xs: 2, md: 3 },
               mb: 4,
               borderRadius: '4px',
               border: `1px solid ${brandColors.border}`,
@@ -456,6 +461,7 @@ export const DashboardPage: React.FC = () => {
                 color: brandColors.black,
                 fontWeight: 700,
                 flexShrink: 0,
+                width: { xs: '100%', md: 'auto' },
                 borderRadius: '4px',
                 textTransform: 'uppercase',
                 fontSize: '0.75rem',
@@ -472,14 +478,54 @@ export const DashboardPage: React.FC = () => {
 
           {/* Recent Pending Registrations Card with Geometric Header */}
           <Box sx={{ mb: 4 }}>
-            {stats.recentPending && stats.recentPending.length > 0 ? (
+            {stats.recentPending && stats.recentPending.length > 0 && isMobile ? (
+              <Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5, gap: 1 }}>
+                  <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: brandColors.textPrimary }}>
+                    Recent Pending Registrations
+                  </Typography>
+                  <Typography
+                    onClick={() => navigate('/mistris/pending')}
+                    sx={{
+                      fontSize: '0.75rem',
+                      fontWeight: 700,
+                      color: brandColors.mustardDark,
+                      textTransform: 'uppercase',
+                      cursor: 'pointer',
+                      flexShrink: 0,
+                    }}
+                  >
+                    View All →
+                  </Typography>
+                </Box>
+                <MistriCardsMobile
+                  mistris={stats.recentPending}
+                  total={stats.recentPending.length}
+                  page={1}
+                  pageSize={stats.recentPending.length || 1}
+                  onPageChange={() => undefined}
+                  hidePagination
+                  onView={(m) => {
+                    setSelectedMistri(m);
+                    setDetailsOpen(true);
+                  }}
+                  onEdit={(m) => {
+                    setSelectedMistri(m);
+                    setEditOpen(true);
+                  }}
+                  onApprove={handleApproveClick}
+                  onRejectOrDelete={handleRejectClick}
+                  isPendingTable
+                />
+              </Box>
+            ) : stats.recentPending && stats.recentPending.length > 0 ? (
               <TableContainer
                 component={Paper}
                 elevation={0}
                 sx={{
                   borderRadius: '4px',
                   border: `1px solid ${brandColors.border}`,
-                  overflow: 'hidden',
+                  overflowX: 'auto',
                   backgroundColor: brandColors.white,
                   boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
                 }}
@@ -524,8 +570,8 @@ export const DashboardPage: React.FC = () => {
                       <TableCell>Primary Phone</TableCell>
                       <TableCell>Location</TableCell>
                       <TableCell>Category</TableCell>
-                      <TableCell>Experience</TableCell>
-                      <TableCell>Date</TableCell>
+                      <TableCell sx={{ display: { xs: 'none', xl: 'table-cell' } }}>Experience</TableCell>
+                      <TableCell sx={{ display: { xs: 'none', xl: 'table-cell' } }}>Date</TableCell>
                       <TableCell align="right">Actions</TableCell>
                     </TableRow>
                   </TableHead>
@@ -608,13 +654,13 @@ export const DashboardPage: React.FC = () => {
                           </Box>
                         </TableCell>
 
-                        <TableCell>
+                        <TableCell sx={{ display: { xs: 'none', xl: 'table-cell' } }}>
                           <Typography variant="body2" sx={{ color: '#4B5563', fontSize: '0.8125rem' }}>
                             {formatExperience(mistri.experienceYears)}
                           </Typography>
                         </TableCell>
 
-                        <TableCell>
+                        <TableCell sx={{ display: { xs: 'none', xl: 'table-cell' } }}>
                           <Typography variant="body2" sx={{ color: '#9CA3AF', fontSize: '0.8125rem' }}>
                             {formatDateOnly(mistri.createdAt)}
                           </Typography>
