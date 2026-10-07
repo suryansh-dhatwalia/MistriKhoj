@@ -42,7 +42,7 @@ export interface ServiceCategory {
 
 export type MistriPlan = 'FREE' | 'PAID';
 
-export type DirectorySortOption = 'random' | 'rating' | 'experience' | 'jobs' | 'price';
+export type DirectorySortOption = 'random' | 'newest' | 'rating' | 'experience';
 
 export interface Technician {
   id: string;
@@ -171,6 +171,8 @@ export interface MistriListItem {
   featuredUntil: string | null;
   avgRating: number;
   ratingsCount: number;
+  /** Lifetime profile views. Only present on the single-profile endpoint. */
+  viewCount?: number;
 }
 
 export interface PaidSlotStatusResponse {
@@ -183,4 +185,28 @@ export interface PaidSlotStatusResponse {
 export interface MistriListApiResponse {
   success: boolean;
   data: MistriListItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  /** Canonical state / city names the URL filters resolved to (null when nothing matched). */
+  location: { state: string | null; city: string | null };
+}
+
+export interface PublicLocationCity {
+  name: string;
+  slug: string;
+  count: number;
+}
+
+export interface PublicLocationState {
+  name: string;
+  slug: string;
+  count: number;
+  cities: PublicLocationCity[];
+}
+
+export interface PublicLocations {
+  total: number;
+  states: PublicLocationState[];
 }

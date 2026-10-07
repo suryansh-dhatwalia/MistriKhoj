@@ -140,7 +140,7 @@ export const MistriCardsMobile: React.FC<MistriCardsMobileProps> = ({
 
             <Box sx={{ display: 'flex', justifyContent: 'space-between', pt: 0.5 }}>
               <Typography variant="caption" sx={{ color: brandColors.textSecondary }}>
-                Exp: <strong>{formatExperience(mistri.experienceYears)}</strong>
+                Exp: <strong>{formatExperience(mistri.experienceYears)}</strong> · Views: <strong>{(mistri.viewCount ?? 0).toLocaleString('en-IN')}</strong>
               </Typography>
               <Typography variant="caption" sx={{ color: brandColors.textSecondary }}>
                 Reg: {formatDateOnly(mistri.createdAt)}

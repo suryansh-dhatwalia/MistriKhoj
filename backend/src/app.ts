@@ -10,6 +10,7 @@ import { mistriRouter } from "./routes/mistri.routes.js";
 import { adminRouter } from "./routes/admin.routes.js";
 import { contentRouter } from "./routes/content.routes.js";
 import { advertiseRouter } from "./routes/advertise.routes.js";
+import { analyticsRouter } from "./routes/analytics.routes.js";
 import { prisma } from "./lib/prisma.js";
 import { HttpError } from "./utils/http-error.js";
 
@@ -70,6 +71,7 @@ app.use(cookieParser());
 app.use("/api/mistris/register", express.json({ limit: "35mb" }));
 app.use("/api/advertise", express.json({ limit: "75mb" }));
 app.use("/api/admin/advertisements", express.json({ limit: "75mb" }));
+app.use("/api/admin/ads", express.json({ limit: "75mb" }));
 app.use("/api/admin/testimonials", express.json({ limit: "10mb" }));
 app.use(express.json({ limit: "1mb" }));
 
@@ -95,6 +97,7 @@ app.get("/api/ready", async (_request, response) => {
 app.use("/api/mistris", mistriRouter);
 app.use("/api/content", contentRouter);
 app.use("/api/advertise", advertiseRouter);
+app.use("/api/analytics", analyticsRouter);
 app.use("/api/admin", adminRouter);
 
 app.use(notFoundHandler);

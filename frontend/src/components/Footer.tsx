@@ -70,11 +70,6 @@ export const Footer: React.FC<FooterProps> = ({
                   <button
                     onClick={() => {
                       onSelectState(st.name);
-                      onNavigateHome();
-                      setTimeout(() => {
-                        const el = document.getElementById('directory-section');
-                        if (el) el.scrollIntoView({ behavior: 'smooth' });
-                      }, 100);
                     }}
                     className="hover:text-white transition-colors text-left"
                   >
@@ -96,11 +91,6 @@ export const Footer: React.FC<FooterProps> = ({
                   <button
                     onClick={() => {
                       onSelectCategory(cat.name);
-                      onNavigateHome();
-                      setTimeout(() => {
-                        const el = document.getElementById('directory-section');
-                        if (el) el.scrollIntoView({ behavior: 'smooth' });
-                      }, 100);
                     }}
                     className="hover:text-white transition-colors text-left"
                   >

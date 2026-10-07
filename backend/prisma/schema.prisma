@@ -379,3 +379,119 @@ model MistriAvailability {
 
   @@map("mistri_availability")
 }
+
+// ---------------------------------------------------------------------------
+// Location-targeted advertising + privacy-friendly analytics.
+// Everything below is append-only: no pre-existing model or enum was changed.
+// Like MistriSubscription / MistriRating these are sidecar tables joined in code
+// via plain id columns (no Prisma `@relation`), so `Advertisement` and `Mistri`
+// themselves stay untouched. Analytics days are Asia/Kolkata calendar days.
+// ---------------------------------------------------------------------------
+
+// Where an advertisement is allowed to appear.
+//   HOME  - homepage ad areas only (placement HOME_BANNER)
+//   STATE - results pages of one state
+//   CITY  - results pages of one city (state + city)
+enum AdScope {
+  HOME
+  STATE
+  CITY
+}
+
+// Commercial + scheduling terms of one Advertisement. `scope` mirrors what the
+// Advertisement's placement / state / city already say and is the pricing tier.
+// An Advertisement with no row here (e.g. published from an ad request) is
+// treated as an unscheduled, unpriced HOME banner.
+model AdvertisementCampaign {
+  id              Int       @id @default(autoincrement())
+  advertisementId Int       @unique @map("advertisement_id")
+  scope           AdScope
+  priceInr        Int       @default(0) @map("price_inr")
+  startsAt        DateTime? @map("starts_at")
+  endsAt          DateTime? @map("ends_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([scope])
+  @@map("advertisement_campaigns")
+}
+
+// Ad impressions (a card scrolled into view), counted per day. `state` / `city`
+// are the results-page location the ad was shown on ("" for homepage ads).
+model AdImpressionDaily {
+  id              Int      @id @default(autoincrement())
+  advertisementId Int      @map("advertisement_id")
+  day             DateTime @db.Date
+  state           String   @default("") @db.VarChar(100)
+  city            String   @default("") @db.VarChar(120)
+  impressions     Int      @default(0)
+
+  @@unique([advertisementId, day, state, city])
+  @@index([day])
+  @@map("ad_impressions_daily")
+}
+
+// Website page views per day and page pattern ("/", "/mistris", "/mistri/:id", ...).
+model PageViewDaily {
+  id    Int      @id @default(autoincrement())
+  day   DateTime @db.Date
+  page  String   @db.VarChar(60)
+  state String   @default("") @db.VarChar(100)
+  city  String   @default("") @db.VarChar(120)
+  views Int      @default(0)
+
+  @@unique([day, page, state, city])
+  @@index([day])
+  @@map("page_views_daily")
+}
+
+// One row per anonymous visitor per day. `visitorHash` is a salted SHA-256 of
+// ip + user-agent + day, so it cannot be reversed and is not linkable across days.
+model VisitorDaily {
+  id          Int      @id @default(autoincrement())
+  day         DateTime @db.Date
+  visitorHash String   @map("visitor_hash") @db.Char(64)
+
+  @@unique([day, visitorHash])
+  @@map("visitors_daily")
+}
+
+// De-duplicated public profile views per Mistri per day. A profile's total is the sum.
+model MistriProfileViewDaily {
+  id       Int      @id @default(autoincrement())
+  mistriId Int      @map("mistri_id")
+  day      DateTime @db.Date
+  views    Int      @default(0)
+
+  @@unique([mistriId, day])
+  @@index([day])
+  @@map("mistri_profile_views_daily")
+}
+
+// Remembers when a visitor (hash) last counted as a view of a Mistri, so repeat
+// opens / refreshes inside the dedupe window do not inflate the count.
+model MistriProfileViewer {
+  id             Int      @id @default(autoincrement())
+  mistriId       Int      @map("mistri_id")
+  visitorHash    String   @map("visitor_hash") @db.Char(64)
+  lastCountedAt  DateTime @map("last_counted_at")
+
+  @@unique([mistriId, visitorHash])
+  @@index([lastCountedAt])
+  @@map("mistri_profile_viewers")
+}
+
+// Where an "Advertise With Us" request wants to run (global/homepage, one state, or one
+// city) and the rate-card price quoted at submission. Sidecar table joined in code via
+// `adRequestId`, so `AdRequest` itself stays untouched. A request with no row here
+// predates targeting and is published as a homepage banner.
+model AdRequestTargeting {
+  id          Int     @id @default(autoincrement())
+  adRequestId Int     @unique @map("ad_request_id")
+  scope       AdScope
+  state       String? @db.VarChar(100)
+  city        String? @db.VarChar(120)
+  priceInr    Int     @default(0) @map("price_inr")
+
+  @@map("ad_request_targeting")
+}

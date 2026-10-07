@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { validateAdTargeting } from "../lib/ad-targeting.js";
 import {
   contentStatusSchema,
   httpUrlSchema,
@@ -253,7 +254,12 @@ export const publicAdsQuerySchema = z.object({
 const adRequestStatusEnum = z.enum(["NEW", "CONTACTED", "APPROVED", "REJECTED"]);
 
 /** Public submission from the "Advertise With Us" form. */
-export const adRequestPublicSchema = z.object({
+export const adRequestPublicSchema = z
+  .object({
+  /** Where the ad should run: homepage/global, one state, or one city. */
+  scope: z.enum(["HOME", "STATE", "CITY"]).default("HOME"),
+  state: nullableText(100),
+  city: nullableText(120),
   companyName: z.string().trim().min(2).max(160),
   contactNumber: phoneSchema,
   email: z.string().trim().toLowerCase().pipe(z.string().email("Enter a valid email").max(191)),
@@ -263,7 +269,14 @@ export const adRequestPublicSchema = z.object({
   /** Optional creative: an https URL or a base64 image / video data URL (uploaded to Cloudinary). */
   creative: z.preprocess(emptyToUndefined, mediaInputSchema.optional()),
   message: nullableText(2_000),
-});
+  })
+  .superRefine((value, ctx) => {
+    for (const [field, messages] of Object.entries(
+      validateAdTargeting({ scope: value.scope, state: value.state, city: value.city }),
+    )) {
+      for (const message of messages) ctx.addIssue({ code: "custom", path: [field], message });
+    }
+  });
 
 export const adRequestAdminUpdateSchema = z.object({ status: adRequestStatusEnum });
 

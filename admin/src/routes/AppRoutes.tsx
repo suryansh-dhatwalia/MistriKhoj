@@ -13,6 +13,8 @@ import { CategoriesPage } from '../pages/CategoriesPage';
 import { ReferralsPage } from '../pages/ReferralsPage';
 import { BannerAdsPage } from '../pages/BannerAdsPage';
 import { CategoryAdsPage } from '../pages/CategoryAdsPage';
+import { AdManagerPage } from '../pages/AdManagerPage';
+import { AnalyticsPage } from '../pages/AnalyticsPage';
 import { VideosPage } from '../pages/VideosPage';
 import { AdRequestsPage } from '../pages/AdRequestsPage';
 import { TestimonialsPage } from '../pages/TestimonialsPage';
@@ -47,6 +49,7 @@ export const AppRoutes: React.FC = () => {
         <Route path="/content/cities" element={<CitiesPage />} />
         <Route path="/content/categories" element={<CategoriesPage />} />
         <Route path="/content/referrals" element={<ReferralsPage />} />
+        <Route path="/content/ads/manage" element={<AdManagerPage />} />
         <Route path="/content/ads/banners" element={<BannerAdsPage />} />
         <Route path="/content/ads/category" element={<CategoryAdsPage />} />
         <Route path="/content/ads/requests" element={<AdRequestsPage />} />
@@ -55,6 +58,7 @@ export const AppRoutes: React.FC = () => {
         <Route path="/content/mistri-news" element={<MistriNewsPage />} />
         <Route path="/content/plans" element={<PlansPage />} />
 
+        <Route path="/reports/analytics" element={<AnalyticsPage />} />
         <Route path="/reports" element={<ReportsPage />} />
         <Route path="/reports/audit" element={<AuditLogPage />} />
         <Route path="/settings" element={<SettingsPage />} />

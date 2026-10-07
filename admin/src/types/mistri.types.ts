@@ -35,6 +35,8 @@ export interface Mistri {
   slotActive?: boolean;
   /** False when an admin has temporarily hidden this Mistri from the public site. */
   isActive?: boolean;
+  /** Lifetime views of the public profile page. */
+  viewCount?: number;
 }
 
 export interface MistriQueryParams {
@@ -46,8 +48,10 @@ export interface MistriQueryParams {
   city?: string;
   category?: string;
   plan?: MistriPlan;
-  sortBy?: 'createdAt' | 'experienceYears' | 'fullName' | 'id';
+  sortBy?: 'createdAt' | 'experienceYears' | 'fullName' | 'id' | 'views';
   sortOrder?: 'asc' | 'desc';
+  /** Only profiles with at least this many views. */
+  minViews?: number;
 }
 
 export interface UpdateMistriInput {

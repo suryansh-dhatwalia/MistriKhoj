@@ -86,8 +86,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       setTimeout(() => {
         const element =
-          document.getElementById('search-filter-box') ||
-          document.getElementById('directory-section');
+          document.getElementById('search-filter-box');
 
         element?.scrollIntoView({
           behavior: 'smooth',
@@ -98,8 +97,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     }
 
     const element =
-      document.getElementById('search-filter-box') ||
-      document.getElementById('directory-section');
+      document.getElementById('search-filter-box');
 
     element?.scrollIntoView({
       behavior: 'smooth',
@@ -193,10 +191,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                             onSelectCategory?.(
                               category.name,
                             );
-
-                            handleNavClick(
-                              'directory-section',
-                            );
+                            setServicesDropdownOpen(false);
                           }}
                           className="flex w-full items-center justify-between px-4 py-2 text-left text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-black"
                         >
@@ -446,9 +441,10 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             <button
               type="button"
-              onClick={() =>
-                handleNavClick('directory-section')
-              }
+              onClick={() => {
+                setSelectedState('All');
+                setMobileMenuOpen(false);
+              }}
               className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
               {t(

@@ -158,6 +158,11 @@ export interface AdRequestItem {
   message: string | null;
   status: AdRequestStatus;
   advertisementId: number | null;
+  /** Targeting the advertiser asked for (older requests default to HOME / global). */
+  scope: 'HOME' | 'STATE' | 'CITY';
+  state: string | null;
+  city: string | null;
+  priceInr: number | null;
   createdAt: string;
   updatedAt: string;
 }

@@ -40,8 +40,6 @@ interface HeroSectionProps {
   setSearchQuery: (query: string) => void;
   minExperience: number;
   setMinExperience: (years: number) => void;
-  onlyGoldPartner: boolean;
-  setOnlyGoldPartner: (value: boolean) => void;
   sortBy: DirectorySortOption;
   setSortBy: (value: DirectorySortOption) => void;
   onSearchSubmit: () => void;
@@ -62,8 +60,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   setSearchQuery,
   minExperience,
   setMinExperience,
-  onlyGoldPartner,
-  setOnlyGoldPartner,
   sortBy,
   setSortBy,
   onSearchSubmit,
@@ -121,7 +117,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             </p>
 
             {/* Unified Search & Advanced Filter Box */}
-            <div className="p-3 sm:p-4 rounded-2xl bg-white border-2 border-gray-900 shadow-[0_8px_20px_rgba(0,0,0,0.06)] relative z-20 space-y-3" id="search-filter-box">
+            <form role="search" aria-label="Find a Mistri" onSubmit={(e) => { e.preventDefault(); onSearchSubmit(); }} className="p-3 sm:p-4 rounded-2xl bg-white border-2 border-gray-900 shadow-[0_8px_20px_rgba(0,0,0,0.06)] relative z-20 space-y-3" id="search-filter-box">
 
               {/* Keyword Search Row */}
               <div className="flex flex-col sm:flex-row items-stretch gap-2">
@@ -132,11 +128,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     placeholder={t('nav_search_placeholder', 'Search Electrician, Plumber, Carpenter...')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        onSearchSubmit();
-                      }
-                    }}
+                    aria-label={t('nav_search_placeholder', 'Search Electrician, Plumber, Carpenter...')}
                     className="w-full py-2.5 text-xs sm:text-sm font-medium text-gray-900 placeholder:text-gray-400 bg-transparent focus:outline-none"
                     id="hero-service-input"
                   />
@@ -144,8 +136,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
                 {/* Mustard Yellow Search Button */}
                 <button
-                  type="button"
-                  onClick={onSearchSubmit}
+                  type="submit"
                   className="px-5 py-2.5 rounded-xl bg-[#FFB800] hover:bg-[#F59E0B] text-black font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 shrink-0 cursor-pointer"
                   id="hero-find-mistri-btn"
                 >
@@ -163,6 +154,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     {t('dir_state_filter', 'State')}
                   </label>
                   <select
+                    aria-label="State"
                     value={selectedState}
                     onChange={(e) => {
                       setSelectedState(e.target.value as SupportedState | 'All');
@@ -185,6 +177,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     {t('dir_city_filter', 'City')}
                   </label>
                   <select
+                    aria-label="City"
                     value={selectedCity}
                     onChange={(e) => setSelectedCity(e.target.value)}
                     disabled={selectedState === 'All'}
@@ -207,6 +200,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     {t('dir_cat_filter', 'Category')}
                   </label>
                   <select
+                    aria-label="Category"
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
                     className="w-full px-2.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-[11px] sm:text-xs font-bold text-gray-900 focus:border-black focus:outline-none"
@@ -226,6 +220,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     {t('dir_exp_years', 'Experience')}
                   </label>
                   <select
+                    aria-label="Minimum experience"
                     value={minExperience}
                     onChange={(e) => setMinExperience(Number(e.target.value))}
                     className="w-full px-2.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-[11px] sm:text-xs font-bold text-gray-900 focus:border-black focus:outline-none"
@@ -243,15 +238,15 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     {t('dir_sort_by', 'Sort By')}
                   </label>
                   <select
+                    aria-label="Sort by"
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as DirectorySortOption)}
                     className="w-full px-2.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-[11px] sm:text-xs font-bold text-gray-900 focus:border-black focus:outline-none"
                   >
-                    <option value="random">{t('dir_sort_random', 'Shuffled (Fair for All)')}</option>
-                    <option value="rating">{t('dir_sort_rating', 'Highest Rating (★ 4.9+)')}</option>
+                    <option value="random">Shuffled (fair for all)</option>
+                    <option value="newest">Newest</option>
+                    <option value="rating">{t('dir_sort_rating', 'Highest Rating')}</option>
                     <option value="experience">{t('dir_sort_experience', 'Most Experienced')}</option>
-                    <option value="jobs">{t('dir_sort_jobs', 'Most Jobs Completed')}</option>
-                    <option value="price">{t('dir_sort_price', 'Starting Rate (Lowest)')}</option>
                   </select>
                 </div>
 
@@ -259,25 +254,12 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
               {/* Secondary Quick Toggles */}
               <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs">
-                <label className="inline-flex items-center gap-2 cursor-pointer select-none bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200 hover:border-black transition-colors">
-                  <input
-                    type="checkbox"
-                    checked={onlyGoldPartner}
-                    onChange={(e) => setOnlyGoldPartner(e.target.checked)}
-                    className="rounded border-gray-300 text-black focus:ring-0"
-                  />
-                  <span className="flex items-center gap-1 font-bold text-gray-900">
-                    <Award className="w-3.5 h-3.5 text-[#FFB800]" />
-                    {t('dir_filter_gold', 'Gold Master & Platinum Only')}
-                  </span>
-                </label>
-
                 <div className="text-[11px] text-gray-500 font-semibold">
                   {t('dir_zero_comm', '0% commission')} • {t('trust_direct_tag', 'Direct Connect')}
                 </div>
               </div>
 
-            </div>
+            </form>
 
             {/* Feature Pills Below Search Bar */}
             <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-xs sm:text-sm font-semibold text-gray-700 pt-1">

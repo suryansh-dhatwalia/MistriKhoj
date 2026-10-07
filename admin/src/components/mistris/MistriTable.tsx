@@ -80,6 +80,7 @@ export const MistriTable: React.FC<MistriTableProps> = ({
               <TableCell>Category</TableCell>
               <TableCell>Plan</TableCell>
               {onToggleAvailability && <TableCell>Visibility</TableCell>}
+              <TableCell align="right">Profile views</TableCell>
               <TableCell>Experience</TableCell>
               <TableCell>Registration Date</TableCell>
               <TableCell align="right" sx={{ pr: 3 }}>
@@ -186,6 +187,12 @@ export const MistriTable: React.FC<MistriTableProps> = ({
                     <AvailabilityToggle mistri={mistri} onToggle={() => onToggleAvailability(mistri)} />
                   </TableCell>
                 )}
+
+                <TableCell align="right">
+                  <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                    {(mistri.viewCount ?? 0).toLocaleString('en-IN')}
+                  </Typography>
+                </TableCell>
 
                 <TableCell>
                   <Typography variant="body2" sx={{ color: '#4B5563', fontSize: '0.8125rem' }}>

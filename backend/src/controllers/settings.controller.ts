@@ -7,6 +7,8 @@ import {
   PAID_PLAN_PRICE_SETTING_KEY,
   isValidPaidPlanPrice,
 } from "../config/subscription.js";
+import { AD_PRICE_SETTING_KEYS, ensureAdRateCardSettings, getAdRateCard } from "../config/ad-pricing.js";
+import { validateAdRateCard, type AdScopeName } from "../lib/ad-targeting.js";
 import { siteSettingsPatchSchema } from "../schemas/content.schema.js";
 
 /** GET /api/admin/settings */
@@ -27,6 +29,7 @@ export async function listSiteSettings(
         settingGroup: "subscription",
       },
     });
+    await ensureAdRateCardSettings(prisma);
     const settings = await prisma.siteSetting.findMany({
       orderBy: [{ settingGroup: "asc" }, { key: "asc" }],
     });
@@ -59,6 +62,21 @@ export async function updateSiteSettings(
       message: "Paid plan price must be a whole number of rupees greater than 0.",
     });
     return;
+  }
+
+  // Ad prices are validated as a set (homepage must stay the most expensive tier).
+  const adPriceKeys = new Set(Object.values(AD_PRICE_SETTING_KEYS));
+  if (parsed.data.settings.some((entry) => adPriceKeys.has(entry.key))) {
+    const rates = await getAdRateCard(prisma);
+    for (const scope of Object.keys(AD_PRICE_SETTING_KEYS) as AdScopeName[]) {
+      const patched = parsed.data.settings.find((entry) => entry.key === AD_PRICE_SETTING_KEYS[scope]);
+      if (patched) rates[scope] = patched.value as number;
+    }
+    const problem = validateAdRateCard(rates);
+    if (problem) {
+      response.status(422).json({ success: false, message: problem });
+      return;
+    }
   }
 
   try {

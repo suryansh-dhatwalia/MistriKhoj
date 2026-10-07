@@ -106,8 +106,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         label: 'Advertising',
         icon: <CampaignIcon />,
         children: [
-          { label: 'Banner Ads', path: '/content/ads/banners', icon: <ViewCarouselIcon /> },
-          { label: 'Category Ads', path: '/content/ads/category', icon: <CampaignIcon /> },
+          { label: 'Ad Manager', path: '/content/ads/manage', icon: <CampaignIcon /> },
+          { label: 'Banner Ads (legacy)', path: '/content/ads/banners', icon: <ViewCarouselIcon /> },
           { label: 'Videos', path: '/content/videos', icon: <OndemandVideoIcon /> },
           { label: 'Ad Requests', path: '/content/ads/requests', icon: <MoveToInboxIcon /> },
         ],
@@ -126,6 +126,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         icon: <InsightsIcon />,
         children: [
           { label: 'Overview', path: '/reports', icon: <InsightsIcon /> },
+          { label: 'Website Analytics', path: '/reports/analytics', icon: <InsightsIcon /> },
           { label: 'Audit Log', path: '/reports/audit', icon: <HistoryIcon /> },
         ],
       },

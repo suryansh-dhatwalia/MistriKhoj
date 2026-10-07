@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { rateLimit, ipKeyGenerator } from "express-rate-limit";
 import {
+  getMistriLocations,
+  getMistriProfile,
   getPaidSlotStatus,
   listMistris,
   rateMistri,
@@ -23,5 +25,7 @@ const ratingRateLimiter = rateLimit({
 
 mistriRouter.get("/", listMistris);
 mistriRouter.get("/paid-slot", getPaidSlotStatus);
+mistriRouter.get("/locations", getMistriLocations);
+mistriRouter.get("/:id", getMistriProfile);
 mistriRouter.post("/register", registerMistri);
 mistriRouter.post("/:id/rating", ratingRateLimiter, rateMistri);

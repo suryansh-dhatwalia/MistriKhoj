@@ -3,120 +3,76 @@ import { getPaidPlanPriceInr } from "../config/subscription.js";
 import { prisma } from "../lib/prisma.js";
 import { mistriRatingSchema, mistriRegistrationSchema, paidSlotQuerySchema } from "../schemas/mistri.schema.js";
 import { idParamSchema } from "../schemas/shared.js";
+import { publicMistriQuerySchema } from "../schemas/directory.schema.js";
+import { profileViewTotals } from "../services/analytics.service.js";
+import {
+  findPublicMistri,
+  loadPublicLocations,
+  queryPublicMistris,
+} from "../services/public-mistri.service.js";
 import {
   removeStoredImages,
   storeImage,
   type StoredImage,
 } from "../services/image.service.js";
 
-function toStringArray(value: unknown): string[] {
-  if (!Array.isArray(value)) return [];
-  return value.filter((item): item is string => typeof item === "string");
-}
-
-function toGalleryUrls(value: unknown): string[] {
-  if (!Array.isArray(value)) return [];
-
-  return value.flatMap((item) => {
-    if (typeof item === "string") return [item];
-    if (item && typeof item === "object" && "url" in item && typeof item.url === "string") {
-      return [item.url];
-    }
-    return [];
-  });
-}
-
+/**
+ * GET /api/mistris — approved, visible Mistris. Accepts state / city / category / q /
+ * minExp / sort filters; paginated when `page` or `pageSize` is sent, otherwise returns
+ * the full list exactly as before.
+ */
 export async function listMistris(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const query = publicMistriQuerySchema.parse(request.query);
+    const result = await queryPublicMistris(query);
+    response.status(200).json({ success: true, ...result });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/** GET /api/mistris/locations — states and cities that currently have a live Mistri. */
+export async function getMistriLocations(
   _request: Request,
   response: Response,
   next: NextFunction,
 ): Promise<void> {
   try {
-    // Admin-deactivated Mistris stay approved but are hidden from the public list.
-    const inactive = await prisma.mistriAvailability.findMany({
-      where: { status: "INACTIVE" },
-      select: { mistriId: true },
-    });
-
-    const mistris = await prisma.mistri.findMany({
-      where: { status: "APPROVED", id: { notIn: inactive.map((row) => row.mistriId) } },
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        state: true,
-        city: true,
-        category: true,
-        fullName: true,
-        primaryPhone: true,
-        alternatePhone: true,
-        qualification: true,
-        address: true,
-        pincode: true,
-        experienceYears: true,
-        servicesOffered: true,
-        shortIntro: true,
-        profilePhotoUrl: true,
-        galleryImages: true,
-        createdAt: true,
-      },
-    });
-
-    // Attach the paid "top listing" flag. Only PAID subscriptions matter here, and
-    // a slot is live only while `expiresAt` is in the future (set on admin approval).
-    const now = Date.now();
-    const paidSubscriptions =
-      mistris.length > 0
-        ? await prisma.mistriSubscription.findMany({
-            where: { mistriId: { in: mistris.map((mistri) => mistri.id) }, plan: "PAID" },
-            select: { mistriId: true, expiresAt: true },
-          })
-        : [];
-
-    const featuredUntilByMistriId = new Map<number, Date>();
-    for (const subscription of paidSubscriptions) {
-      if (subscription.expiresAt && subscription.expiresAt.getTime() > now) {
-        featuredUntilByMistriId.set(subscription.mistriId, subscription.expiresAt);
-      }
-    }
-
-    // Same manual-join approach as the subscription lookup above: MistriRating has
-    // no Prisma relation to Mistri, so its per-Mistri average is aggregated here and
-    // merged in by id.
-    const ratingAggregates =
-      mistris.length > 0
-        ? await prisma.mistriRating.groupBy({
-            by: ["mistriId"],
-            where: { mistriId: { in: mistris.map((mistri) => mistri.id) }, status: "ACTIVE" },
-            _avg: { rating: true },
-            _count: { rating: true },
-          })
-        : [];
-
-    const ratingByMistriId = new Map(
-      ratingAggregates.map((row) => [row.mistriId, { avg: row._avg.rating ?? 0, count: row._count.rating }]),
-    );
-
-    const data = mistris
-      .map((mistri) => {
-        const featuredUntil = featuredUntilByMistriId.get(mistri.id) ?? null;
-        const ratingInfo = ratingByMistriId.get(mistri.id);
-        return {
-          ...mistri,
-          servicesOffered: toStringArray(mistri.servicesOffered),
-          galleryImages: toGalleryUrls(mistri.galleryImages),
-          plan: featuredUntil ? ("PAID" as const) : ("FREE" as const),
-          isFeatured: featuredUntil != null,
-          featuredUntil: featuredUntil ? featuredUntil.toISOString() : null,
-          avgRating: ratingInfo ? Math.round(ratingInfo.avg * 10) / 10 : 0,
-          ratingsCount: ratingInfo?.count ?? 0,
-        };
-      })
-      // Featured profiles first; `createdAt desc` order is preserved within each
-      // group (Array.prototype.sort is stable). The public directory does the
-      // final per-filter pinning client-side.
-      .sort((a, b) => Number(b.isFeatured) - Number(a.isFeatured));
-
+    const data = await loadPublicLocations();
+    response.set("Cache-Control", "public, max-age=60");
     response.status(200).json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/** GET /api/mistris/:id — one public profile, including its lifetime view count. */
+export async function getMistriProfile(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const id = idParamSchema.safeParse(request.params.id);
+    if (!id.success) {
+      response.status(400).json({ success: false, message: "Invalid Mistri ID." });
+      return;
+    }
+    const mistri = await findPublicMistri(id.data);
+    if (!mistri) {
+      response.status(404).json({ success: false, message: "This Mistri profile is not available." });
+      return;
+    }
+    // The counter is secondary: if its table is unavailable the profile must still load.
+    const totals = await profileViewTotals([id.data]).catch((error: unknown) => {
+      console.error("profile view count unavailable", error);
+      return new Map<number, number>();
+    });
+    response.status(200).json({ success: true, data: { ...mistri, viewCount: totals.get(id.data) ?? 0 } });
   } catch (error) {
     next(error);
   }

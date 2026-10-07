@@ -27,6 +27,15 @@ const envSchema = z
     BACKUP_DIR: z.string().trim().min(1).default("backups"),
     BACKUP_INTERVAL_DAYS: z.coerce.number().int().min(0).max(365).default(15),
     DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
+    // Secret mixed into anonymous visitor hashes. Falls back to a value derived from DATABASE_URL.
+    ANALYTICS_SALT: optionalNonEmptyString,
+    // A visitor re-opening the same profile within this many minutes counts as one view.
+    // Ignore views from a browser that has a valid admin session. Default: on in production, off in development.
+    ANALYTICS_IGNORE_ADMIN: z.preprocess(
+      (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+      z.enum(["true", "false"]).optional(),
+    ),
+    PROFILE_VIEW_DEDUPE_MINUTES: z.coerce.number().int().min(1).max(1440).default(30),
     CLOUDINARY_CLOUD_NAME: optionalNonEmptyString,
     CLOUDINARY_API_KEY: optionalNonEmptyString,
     CLOUDINARY_API_SECRET: optionalNonEmptyString,

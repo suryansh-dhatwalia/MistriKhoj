@@ -1,9 +1,28 @@
 import type { NextFunction, Request, Response } from "express";
+import { ensureAdRateCardSettings, getAdRateCard } from "../config/ad-pricing.js";
 import { prisma } from "../lib/prisma.js";
 import type { SafeAdmin } from "../middleware/admin-auth.js";
-import { adRequestAdminUpdateSchema, adRequestPublicSchema } from "../schemas/content.schema.js";
+import {
+  adRequestAdminUpdateSchema,
+  adRequestListQuerySchema,
+  adRequestPublicSchema,
+} from "../schemas/content.schema.js";
 import { idParamSchema, isVideoDataUri } from "../schemas/shared.js";
 import { storeImage, storeVideo } from "../services/image.service.js";
+import { resolveLocation } from "./ad-campaign.controller.js";
+
+/** Duration option -> days the ad runs once approved. */
+const DURATION_DAYS: Record<string, number> = { "1_week": 7, "1_month": 30, "3_months": 90, "6_months": 180 };
+
+/** GET /api/advertise/rates — public rate card per ad tier (homepage/global, state, city). */
+export async function getPublicRates(_request: Request, response: Response, next: NextFunction): Promise<void> {
+  try {
+    await ensureAdRateCardSettings(prisma);
+    response.status(200).json({ success: true, data: await getAdRateCard(prisma) });
+  } catch (error) {
+    next(error);
+  }
+}
 
 /** POST /api/advertise — public "Advertise With Us" form submission. */
 export async function submitAdRequest(
@@ -36,19 +55,29 @@ export async function submitAdRequest(
       creativePublicId = stored.publicId ?? undefined;
     }
 
-    const created = await prisma.adRequest.create({
-      data: {
-        companyName: input.companyName,
-        contactNumber: input.contactNumber,
-        email: input.email,
-        adType: input.adType,
-        duration: input.duration,
-        targetUrl: input.targetUrl,
-        creativeUrl,
-        creativePublicId,
-        message: input.message,
-      },
-      select: { id: true, createdAt: true },
+    // Canonical state / city spelling from the masters, and the rate-card price for the tier.
+    const location = await resolveLocation(input);
+    const priceInr = (await getAdRateCard(prisma))[input.scope];
+
+    const created = await prisma.$transaction(async (tx) => {
+      const row = await tx.adRequest.create({
+        data: {
+          companyName: input.companyName,
+          contactNumber: input.contactNumber,
+          email: input.email,
+          adType: input.adType,
+          duration: input.duration,
+          targetUrl: input.targetUrl,
+          creativeUrl,
+          creativePublicId,
+          message: input.message,
+        },
+        select: { id: true, createdAt: true },
+      });
+      await tx.adRequestTargeting.create({
+        data: { adRequestId: row.id, scope: input.scope, state: location.state, city: location.city, priceInr },
+      });
+      return row;
     });
 
     response.status(201).json({
@@ -117,9 +146,11 @@ export async function updateAdRequestStatus(
           advertisementId = linked.id;
         } else {
           const isVideo = existing.adType === "video";
-          // Both image and video ad requests publish into the rotating homepage
-          // banner — the public banner renders either creative type.
-          const placement = "HOME_BANNER";
+          const targeting = await tx.adRequestTargeting.findUnique({ where: { adRequestId: id.data } });
+          const scope = targeting?.scope ?? "HOME";
+          // Homepage/global requests publish into the rotating homepage banner (image or
+          // video); state / city requests publish as location-targeted results-page ads.
+          const placement = scope === "HOME" ? "HOME_BANNER" : "CATEGORY";
           const maxSort = await tx.advertisement.aggregate({
             where: { placement },
             _max: { sortOrder: true },
@@ -137,12 +168,26 @@ export async function updateAdRequestStatus(
               // No videoPublicId column — a video ad keeps its Cloudinary id in
               // imagePublicId (its imageUrl is null), matching the Banner Ads screen.
               imagePublicId: existing.creativePublicId,
+              state: scope === "HOME" ? null : targeting?.state ?? null,
+              city: scope === "CITY" ? targeting?.city ?? null : null,
               sortOrder: (maxSort._max.sortOrder ?? -1) + 1,
               // Publish live when a creative was supplied, otherwise leave it as a
               // draft on the Banner Ads screen for the admin to finish.
               status: hasCreative ? "ACTIVE" : "INACTIVE",
             },
           });
+          if (targeting) {
+            const days = DURATION_DAYS[existing.duration];
+            await tx.advertisementCampaign.create({
+              data: {
+                advertisementId: ad.id,
+                scope,
+                priceInr: targeting.priceInr,
+                startsAt: null,
+                endsAt: days ? new Date(Date.now() + days * 86_400_000) : null,
+              },
+            });
+          }
           await tx.adRequest.update({
             where: { id: id.data },
             data: { advertisementId: ad.id },
@@ -173,6 +218,68 @@ export async function updateAdRequestStatus(
     });
 
     response.status(200).json({ success: true, data: result });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/** GET /api/admin/ad-requests — paged list, each request with the targeting it asked for. */
+export async function listAdRequests(request: Request, response: Response, next: NextFunction): Promise<void> {
+  const parsed = adRequestListQuerySchema.safeParse(request.query);
+  if (!parsed.success) {
+    response.status(422).json({
+      success: false,
+      message: "Invalid list filters.",
+      errors: parsed.error.flatten().fieldErrors,
+    });
+    return;
+  }
+  const query = parsed.data;
+
+  try {
+    const where = {
+      ...(query.status ? { status: query.status } : {}),
+      ...(query.search
+        ? {
+            OR: [
+              { companyName: { contains: query.search } },
+              { email: { contains: query.search } },
+              { contactNumber: { contains: query.search } },
+            ],
+          }
+        : {}),
+    };
+    const [items, total] = await Promise.all([
+      prisma.adRequest.findMany({
+        where,
+        orderBy: [{ [query.sortBy ?? "createdAt"]: query.sortOrder }],
+        skip: (query.page - 1) * query.pageSize,
+        take: query.pageSize,
+      }),
+      prisma.adRequest.count({ where }),
+    ]);
+    const targeting = await prisma.adRequestTargeting.findMany({
+      where: { adRequestId: { in: items.map((item) => item.id) } },
+    });
+    const byRequest = new Map(targeting.map((row) => [row.adRequestId, row]));
+
+    response.status(200).json({
+      success: true,
+      data: items.map((item) => {
+        const row = byRequest.get(item.id);
+        return {
+          ...item,
+          scope: row?.scope ?? "HOME",
+          state: row?.state ?? null,
+          city: row?.city ?? null,
+          priceInr: row?.priceInr ?? null,
+        };
+      }),
+      total,
+      page: query.page,
+      pageSize: query.pageSize,
+      totalPages: Math.max(1, Math.ceil(total / query.pageSize)),
+    });
   } catch (error) {
     next(error);
   }

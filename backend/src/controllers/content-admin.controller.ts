@@ -259,7 +259,7 @@ export const categoryController = createCrudController({
  * in `imagePublicId` (free, since a video ad has no image) and cleanup picks the
  * resource type from whether `videoUrl` is set.
  */
-async function adMediaToData(input: AnyRecord, existing?: AnyRecord): Promise<AnyRecord> {
+export async function adMediaToData(input: AnyRecord, existing?: AnyRecord): Promise<AnyRecord> {
   const { image, video, ...rest } = input;
   const data: AnyRecord = { ...rest };
 
@@ -287,7 +287,7 @@ async function adMediaToData(input: AnyRecord, existing?: AnyRecord): Promise<An
   return data;
 }
 
-async function removeAdCreative(row: AnyRecord): Promise<void> {
+export async function removeAdCreative(row: AnyRecord): Promise<void> {
   const publicId = row.imagePublicId;
   if (typeof publicId !== "string" || !publicId) return;
   if (typeof row.videoUrl === "string" && row.videoUrl) {
@@ -392,6 +392,9 @@ export const adRequestController = createCrudController({
   defaultOrderBy: [{ createdAt: "desc" }],
   existingSelectForWrite: { id: true, creativePublicId: true },
   onAfterDelete: async (existing) => {
+    if (typeof existing.id === "number") {
+      await prisma.adRequestTargeting.deleteMany({ where: { adRequestId: existing.id } });
+    }
     const publicId = existing.creativePublicId;
     if (typeof publicId === "string" && publicId) {
       await removeStoredImages([publicId]);

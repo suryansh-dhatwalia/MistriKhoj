@@ -9,6 +9,7 @@ import {
   mistriAvailabilitySchema,
   rejectMistriSchema,
 } from "../schemas/admin.schema.js";
+import { profileViewTotals } from "../services/analytics.service.js";
 import { removeStoredImages } from "../services/image.service.js";
 
 function parseMistriId(value: string | string[] | undefined): number | null {
@@ -266,22 +267,57 @@ export async function listAdminMistris(
         : {}),
     };
 
-    const [items, total] = await prisma.$transaction([
-      prisma.mistri.findMany({
+    // Profile views live in a sidecar table (no Prisma relation), so sorting or filtering by
+    // them is done in code: rank the matching ids first, then load only the requested page.
+    const byViews = input.sortBy === "views" || (input.minViews ?? 0) > 0;
+    let items: Array<Prisma.MistriGetPayload<{ select: typeof adminMistriSelect }>>;
+    let total: number;
+    let viewTotals: Map<number, number>;
+
+    if (byViews) {
+      const matching = await prisma.mistri.findMany({
         where,
-        select: adminMistriSelect,
-        orderBy: { [input.sortBy]: input.sortOrder },
-        skip: (input.page - 1) * input.pageSize,
-        take: input.pageSize,
-      }),
-      prisma.mistri.count({ where }),
-    ]);
+        select: { id: true, createdAt: true },
+        orderBy: { createdAt: "desc" },
+      });
+      const totals = await profileViewTotals(matching.map((row) => row.id));
+      const direction = input.sortOrder === "asc" ? 1 : -1;
+      const ranked = matching
+        .filter((row) => (totals.get(row.id) ?? 0) >= (input.minViews ?? 0))
+        .sort((a, b) =>
+          input.sortBy === "views"
+            ? ((totals.get(a.id) ?? 0) - (totals.get(b.id) ?? 0)) * direction || b.id - a.id
+            : 0,
+        );
+      total = ranked.length;
+      const pageIds = ranked.slice((input.page - 1) * input.pageSize, input.page * input.pageSize).map((row) => row.id);
+      const pageRows = await prisma.mistri.findMany({ where: { id: { in: pageIds } }, select: adminMistriSelect });
+      const rowById = new Map(pageRows.map((row) => [row.id, row]));
+      items = pageIds.flatMap((id) => (rowById.has(id) ? [rowById.get(id)!] : []));
+      viewTotals = totals;
+    } else {
+      const sortBy = input.sortBy as "createdAt" | "experienceYears" | "fullName" | "id";
+      [items, total] = await prisma.$transaction([
+        prisma.mistri.findMany({
+          where,
+          select: adminMistriSelect,
+          orderBy: { [sortBy]: input.sortOrder },
+          skip: (input.page - 1) * input.pageSize,
+          take: input.pageSize,
+        }),
+        prisma.mistri.count({ where }),
+      ]);
+      viewTotals = await profileViewTotals(items.map((item) => item.id));
+    }
 
     const info = await subscriptionInfoByMistriId(items.map((item) => item.id));
 
     response.status(200).json({
       success: true,
-      data: items.map((item) => withSubscription(presentMistri(item), info)),
+      data: items.map((item) => ({
+        ...withSubscription(presentMistri(item), info),
+        viewCount: viewTotals.get(item.id) ?? 0,
+      })),
       total,
       page: input.page,
       pageSize: input.pageSize,
@@ -310,7 +346,11 @@ export async function getAdminMistri(
       return;
     }
     const info = await subscriptionInfoByMistriId([id]);
-    response.status(200).json({ success: true, data: withSubscription(presentMistri(mistri), info) });
+    const views = await profileViewTotals([id]);
+    response.status(200).json({
+      success: true,
+      data: { ...withSubscription(presentMistri(mistri), info), viewCount: views.get(id) ?? 0 },
+    });
   } catch (error) {
     next(error);
   }

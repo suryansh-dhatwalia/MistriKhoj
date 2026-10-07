@@ -43,8 +43,10 @@ export const adminMistriQuerySchema = z.object({
   city: optionalText(100),
   category: optionalText(120),
   plan: z.enum(["FREE", "PAID"]).optional(),
-  sortBy: z.enum(["createdAt", "experienceYears", "fullName", "id"]).default("createdAt"),
+  sortBy: z.enum(["createdAt", "experienceYears", "fullName", "id", "views"]).default("createdAt"),
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
+  /** Only Mistris whose public profile has at least this many views. */
+  minViews: z.coerce.number().int().min(0).max(100_000_000).optional(),
 });
 
 export const mistriAvailabilitySchema = z.object({

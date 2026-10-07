@@ -36,6 +36,7 @@ export const errorHandler: ErrorRequestHandler = (error, _request, response, _ne
     response.status(error.statusCode).json({
       success: false,
       message: error.message,
+      ...(error.fieldErrors ? { errors: error.fieldErrors } : {}),
       requestId,
     });
     return;

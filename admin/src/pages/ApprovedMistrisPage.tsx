@@ -3,6 +3,7 @@ import {
   Box,
   Typography,
   Button,
+  TextField,
   useMediaQuery,
   useTheme,
   Snackbar,
@@ -39,8 +40,9 @@ export const ApprovedMistrisPage: React.FC = () => {
   const [stateFilter, setStateFilter] = useState<string>('');
   const [cityFilter, setCityFilter] = useState<string>('');
   const [categoryFilter, setCategoryFilter] = useState<string>('');
-  const [sortBy, setSortBy] = useState<'createdAt' | 'experienceYears' | 'fullName' | 'id'>('createdAt');
+  const [sortBy, setSortBy] = useState<NonNullable<MistriQueryParams['sortBy']>>('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [minViews, setMinViews] = useState<string>('');
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
 
@@ -75,6 +77,7 @@ export const ApprovedMistrisPage: React.FC = () => {
       category: categoryFilter || undefined,
       sortBy,
       sortOrder,
+      minViews: minViews ? Number(minViews) : undefined,
     };
 
     try {
@@ -98,7 +101,7 @@ export const ApprovedMistrisPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [page, pageSize, search, stateFilter, cityFilter, categoryFilter, sortBy, sortOrder]);
+  }, [page, pageSize, search, stateFilter, cityFilter, categoryFilter, sortBy, sortOrder, minViews]);
 
   useEffect(() => {
     fetchApprovedMistris();
@@ -111,6 +114,7 @@ export const ApprovedMistrisPage: React.FC = () => {
     setCategoryFilter('');
     setSortBy('createdAt');
     setSortOrder('desc');
+    setMinViews('');
     setPage(1);
   };
 
@@ -262,6 +266,19 @@ export const ApprovedMistrisPage: React.FC = () => {
         availableStates={availableStates}
         availableCategories={availableCategories}
       />
+
+      <Box sx={{ mb: 2, maxWidth: 220 }}>
+        <TextField
+          size="small"
+          fullWidth
+          label="Minimum profile views"
+          value={minViews}
+          onChange={(e) => {
+            setMinViews(e.target.value.replace(/\D/g, ''));
+            setPage(1);
+          }}
+        />
+      </Box>
 
       {/* Error State */}
       {errorInfo && (

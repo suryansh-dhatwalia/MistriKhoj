@@ -170,6 +170,7 @@ export const MistriFilters: React.FC<MistriFiltersProps> = ({
             <MenuItem value="experienceYears">Experience</MenuItem>
             <MenuItem value="fullName">Name</MenuItem>
             <MenuItem value="id">ID</MenuItem>
+            <MenuItem value="views">Profile views</MenuItem>
           </TextField>
         </Grid>
 

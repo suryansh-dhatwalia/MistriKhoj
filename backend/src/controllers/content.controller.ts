@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
+import { isAdVisibleOnHome, isAdVisibleOnResults } from "../lib/ad-targeting.js";
 import { prisma } from "../lib/prisma.js";
 import { publicAdsQuerySchema } from "../schemas/content.schema.js";
 
@@ -89,7 +90,13 @@ export async function getCategories(
   }
 }
 
-/** GET /api/content/ads?placement=HOME_BANNER | CATEGORY&state=&city=&category= */
+/**
+ * GET /api/content/ads?placement=HOME_BANNER | CATEGORY&state=&city=&category=
+ *
+ * Placement is strict: HOME_BANNER returns only live homepage/global ads; CATEGORY
+ * returns only live state/city-targeted ads for the given location (a city-targeted ad
+ * only when that exact city is browsed) and nothing at all when no state is given.
+ */
 export async function getAds(request: Request, response: Response, next: NextFunction): Promise<void> {
   const parsed = publicAdsQuerySchema.safeParse(request.query);
   if (!parsed.success) {
@@ -98,24 +105,36 @@ export async function getAds(request: Request, response: Response, next: NextFun
   }
   const { placement, state, city, category } = parsed.data;
 
-  const where: Record<string, unknown> = { status: "ACTIVE", placement };
-  if (placement === "CATEGORY") {
-    where.AND = [
-      { OR: [{ state: null }, ...(state ? [{ state }] : [])] },
-      { OR: [{ city: null }, ...(city ? [{ city }] : [])] },
-      { OR: [{ category: null }, ...(category ? [{ category }] : [])] },
-    ];
-  }
-
   try {
     const ads = await prisma.advertisement.findMany({
-      where,
+      where: {
+        status: "ACTIVE",
+        placement,
+        ...(placement === "CATEGORY" ? { state: { not: null } } : {}),
+      },
       orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
     });
 
+    let visible = ads;
+    if (placement === "HOME_BANNER" || placement === "CATEGORY") {
+      const campaigns = await prisma.advertisementCampaign.findMany({
+        where: { advertisementId: { in: ads.map((ad) => ad.id) } },
+      });
+      const campaignByAd = new Map(campaigns.map((row) => [row.advertisementId, row]));
+      const now = new Date();
+      visible =
+        placement === "HOME_BANNER"
+          ? ads.filter((ad) => isAdVisibleOnHome(ad, campaignByAd.get(ad.id) ?? null, now))
+          : state
+            ? ads.filter((ad) =>
+                isAdVisibleOnResults(ad, campaignByAd.get(ad.id) ?? null, { state, city, category }, now),
+              )
+            : [];
+    }
+
     sendCached(response, {
       success: true,
-      data: ads.map((ad) => ({
+      data: visible.map((ad) => ({
         id: ad.id,
         placement: ad.placement,
         companyName: ad.companyName,

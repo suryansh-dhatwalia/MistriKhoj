@@ -1,6 +1,17 @@
 import { Router } from "express";
 import { rateLimit } from "express-rate-limit";
 import { getCurrentAdmin, loginAdmin, logoutAdmin } from "../controllers/admin-auth.controller.js";
+import {
+  createAd,
+  deleteAd,
+  getAd,
+  getRateCard,
+  listAds,
+  setAdStatus,
+  updateAd,
+  updateRateCard,
+} from "../controllers/ad-campaign.controller.js";
+import { getAnalyticsOverview } from "../controllers/admin-analytics.controller.js";
 import { getAdminDashboard } from "../controllers/admin-dashboard.controller.js";
 import {
   approveMistri,
@@ -23,7 +34,7 @@ import {
   stateController,
   testimonialController,
 } from "../controllers/content-admin.controller.js";
-import { updateAdRequestStatus } from "../controllers/ad-request.controller.js";
+import { listAdRequests, updateAdRequestStatus } from "../controllers/ad-request.controller.js";
 import { listAuditLogs } from "../controllers/audit.controller.js";
 import { downloadDataExport } from "../controllers/export.controller.js";
 import { getReportsOverview } from "../controllers/reports.controller.js";
@@ -100,7 +111,7 @@ adminRouter.use("/referrals", referralRouter);
 // Advertise-with-us requests: list / view / update status / delete (no admin create).
 // Approving via updateAdRequestStatus also publishes the linked live Advertisement.
 const adRequestRouter = Router();
-adRequestRouter.get("/", adRequestController.list);
+adRequestRouter.get("/", listAdRequests);
 adRequestRouter.get("/:id", adRequestController.getOne);
 adRequestRouter.patch("/:id", updateAdRequestStatus);
 adRequestRouter.delete("/:id", adRequestController.remove);
@@ -115,6 +126,20 @@ mistriRatingRouter.get("/:id", mistriRatingController.getOne);
 mistriRatingRouter.patch("/:id", mistriRatingController.update);
 mistriRatingRouter.delete("/:id", mistriRatingController.remove);
 adminRouter.use("/mistri-ratings", mistriRatingRouter);
+
+// Location-targeted advertisements (homepage / state-wide / city-specific) and their rate card.
+// Registered before the generic `:id` routes so `rate-card` is not read as an id.
+adminRouter.get("/ads/rate-card", getRateCard);
+adminRouter.put("/ads/rate-card", updateRateCard);
+adminRouter.get("/ads", listAds);
+adminRouter.post("/ads", createAd);
+adminRouter.get("/ads/:id", getAd);
+adminRouter.patch("/ads/:id", updateAd);
+adminRouter.patch("/ads/:id/status", setAdStatus);
+adminRouter.delete("/ads/:id", deleteAd);
+
+// Website analytics (page views, visitors, profile views, ad impressions).
+adminRouter.get("/analytics/overview", getAnalyticsOverview);
 
 adminRouter.get("/reports/overview", getReportsOverview);
 adminRouter.get("/export/data", downloadDataExport);

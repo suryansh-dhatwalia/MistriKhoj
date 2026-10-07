@@ -73,8 +73,6 @@ export const PopularCategories: React.FC<PopularCategoriesProps> = ({ onSelectCa
               key={cat.id}
               onClick={() => {
                 onSelectCategory(cat.name);
-                const el = document.getElementById('directory-section');
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
               }}
               className="group p-5 rounded-2xl bg-gray-50/70 border border-gray-200 hover:border-black transition-all duration-200 hover:shadow-md cursor-pointer flex flex-col justify-between"
             >

@@ -40,7 +40,7 @@ export const PendingMistrisPage: React.FC = () => {
   const [stateFilter, setStateFilter] = useState<string>('');
   const [cityFilter, setCityFilter] = useState<string>('');
   const [categoryFilter, setCategoryFilter] = useState<string>('');
-  const [sortBy, setSortBy] = useState<'createdAt' | 'experienceYears' | 'fullName' | 'id'>('createdAt');
+  const [sortBy, setSortBy] = useState<NonNullable<MistriQueryParams['sortBy']>>('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);

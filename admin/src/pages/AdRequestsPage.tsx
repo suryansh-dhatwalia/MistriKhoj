@@ -20,6 +20,12 @@ const DURATION_LABELS: Record<string, string> = {
   '6_months': '6 Months',
 };
 
+const SCOPE_LABELS: Record<AdRequestItem['scope'], string> = {
+  HOME: 'Global (Homepage)',
+  STATE: 'State-wide',
+  CITY: 'City-specific',
+};
+
 const columns: ColumnDef<AdRequestItem>[] = [
   {
     key: 'companyName',
@@ -49,6 +55,25 @@ const columns: ColumnDef<AdRequestItem>[] = [
         <Typography variant="caption" sx={{ color: 'text.secondary' }}>
           {DURATION_LABELS[row.duration] ?? row.duration}
         </Typography>
+      </div>
+    ),
+  },
+  {
+    key: 'scope',
+    header: 'Target',
+    render: (row) => (
+      <div>
+        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+          {SCOPE_LABELS[row.scope]}
+        </Typography>
+        <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
+          {row.scope === 'HOME' ? 'All visitors' : [row.city, row.state].filter(Boolean).join(', ')}
+        </Typography>
+        {row.priceInr !== null && (
+          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+            ₹{row.priceInr.toLocaleString('en-IN')} / ad
+          </Typography>
+        )}
       </div>
     ),
   },
@@ -124,7 +149,7 @@ const fields: FieldDef[] = [
 export const AdRequestsPage: React.FC = () => (
   <ResourcePage<AdRequestItem>
     title="Ad Requests"
-    subtitle='Submissions from the "Advertise With Us" form. Setting one to Approved publishes it — image ads to Banner Ads, video ads to Videos — and reverting takes that ad offline.'
+    subtitle='Submissions from the "Advertise With Us" form. Setting one to Approved publishes it to the Advertisements screen as a global (homepage), state-wide or city-specific ad, as requested — and reverting takes that ad offline.'
     api={adRequestsApi}
     singularLabel="Ad request"
     columns={columns}

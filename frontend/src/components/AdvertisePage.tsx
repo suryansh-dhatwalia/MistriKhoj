@@ -1,8 +1,20 @@
-import React, { useRef, useState } from 'react';
-import { ArrowLeft, Check, Upload, Building2, Phone, Mail, Image as ImageIcon, Film, CreditCard, Loader2 } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { ArrowLeft, Check, Upload, Building2, Phone, Mail, Image as ImageIcon, Film, CreditCard, Loader2, Globe2, MapPin, Landmark } from 'lucide-react';
 import axios from 'axios';
 import { api } from '../lib/api';
 import { useLanguage } from '../context/LanguageContext';
+import { useContent } from '../context/ContentContext';
+
+type AdScope = 'HOME' | 'STATE' | 'CITY';
+type RateCard = Record<AdScope, number>;
+
+const SCOPE_OPTIONS: { value: AdScope; label: string; hint: string; icon: React.ElementType }[] = [
+  { value: 'HOME', label: 'Global (Homepage)', hint: 'Shown to every visitor on the homepage', icon: Globe2 },
+  { value: 'STATE', label: 'State-wide', hint: 'Shown on search results across one state', icon: Landmark },
+  { value: 'CITY', label: 'City-specific', hint: 'Shown on search results for one city', icon: MapPin },
+];
+
+const inr = (value: number) => `₹${value.toLocaleString('en-IN')}`;
 
 interface AdvertisePageProps {
   onBackToHome: () => void;
@@ -23,6 +35,7 @@ const fileToDataUrl = (file: File) =>
 
 export const AdvertisePage: React.FC<AdvertisePageProps> = ({ onBackToHome }) => {
   const { t } = useLanguage();
+  const { states, getCitiesForState } = useContent();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -33,6 +46,10 @@ export const AdvertisePage: React.FC<AdvertisePageProps> = ({ onBackToHome }) =>
   const [companyName, setCompanyName] = useState('');
   const [contactNumber, setContactNumber] = useState('');
   const [email, setEmail] = useState('');
+  const [scope, setScope] = useState<AdScope>('HOME');
+  const [state, setState] = useState('');
+  const [city, setCity] = useState('');
+  const [rates, setRates] = useState<RateCard | null>(null);
   const [adType, setAdType] = useState<'image' | 'video'>('image');
   const [duration, setDuration] = useState('');
   const [targetUrl, setTargetUrl] = useState('');
@@ -42,6 +59,20 @@ export const AdvertisePage: React.FC<AdvertisePageProps> = ({ onBackToHome }) =>
   const [videoDataUrl, setVideoDataUrl] = useState('');
   const [videoFileName, setVideoFileName] = useState('');
   const videoInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    api
+      .get<{ data: RateCard }>('/advertise/rates')
+      .then((response) => setRates(response.data.data))
+      .catch(() => setRates(null));
+  }, []);
+
+  const changeScope = (next: AdScope) => {
+    setScope(next);
+    if (next === 'HOME') setState('');
+    if (next !== 'CITY') setCity('');
+    setFieldErrors((prev) => ({ ...prev, state: '', city: '' }));
+  };
 
   const handleFile = async (file: File | undefined) => {
     setFieldErrors((prev) => ({ ...prev, creative: '' }));
@@ -91,6 +122,9 @@ export const AdvertisePage: React.FC<AdvertisePageProps> = ({ onBackToHome }) =>
 
     try {
       await api.post('/advertise', {
+        scope,
+        state: scope === 'HOME' ? undefined : state || undefined,
+        city: scope === 'CITY' ? city || undefined : undefined,
         companyName: companyName.trim(),
         contactNumber: contactNumber.trim(),
         email: email.trim(),
@@ -174,7 +208,7 @@ export const AdvertisePage: React.FC<AdvertisePageProps> = ({ onBackToHome }) =>
             Submit Your Ad Request
           </h2>
           <p className="text-sm text-gray-400 mt-2">
-            Fill out the details below to request ad placement on our homepage banner.
+            Fill out the details below to request ad placement — homepage-wide, across a state, or in a single city.
           </p>
         </div>
 
@@ -249,6 +283,80 @@ export const AdvertisePage: React.FC<AdvertisePageProps> = ({ onBackToHome }) =>
             <h3 className="text-sm font-bold text-gray-900 border-b pb-2 uppercase tracking-wide">
               2. Advertisement Setup
             </h3>
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-gray-700">Where should your ad appear? *</label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {SCOPE_OPTIONS.map(({ value, label, hint, icon: Icon }) => (
+                  <label key={value} className="cursor-pointer">
+                    <input
+                      type="radio"
+                      name="scope"
+                      value={value}
+                      checked={scope === value}
+                      onChange={() => changeScope(value)}
+                      className="peer sr-only"
+                    />
+                    <div className="h-full flex flex-col p-4 border-2 border-gray-200 rounded-xl peer-checked:border-black peer-checked:bg-gray-50 peer-focus-visible:ring-2 peer-focus-visible:ring-black transition-all">
+                      <Icon className="w-6 h-6 mb-2 text-gray-600" />
+                      <span className="text-xs font-bold">{label}</span>
+                      <span className="text-[11px] text-gray-500 mt-1">{hint}</span>
+                      {rates && <span className="text-xs font-black text-black mt-2">{inr(rates[value])} per ad</span>}
+                    </div>
+                  </label>
+                ))}
+              </div>
+              {scope === 'HOME' && (
+                <p className="text-[11px] text-gray-500">Global ads are the premium tier — they run on the homepage for all visitors.</p>
+              )}
+            </div>
+
+            {scope !== 'HOME' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-gray-700">State *</label>
+                  <select
+                    required
+                    name="state"
+                    value={state}
+                    onChange={(e) => {
+                      setState(e.target.value);
+                      setCity('');
+                    }}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-black focus:border-black transition-all outline-none"
+                  >
+                    <option value="">Select state...</option>
+                    {states.map((item) => (
+                      <option key={item.name} value={item.name}>
+                        {item.name}
+                      </option>
+                    ))}
+                  </select>
+                  {fieldError('state')}
+                </div>
+                {scope === 'CITY' && (
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-gray-700">City *</label>
+                    <select
+                      required
+                      name="city"
+                      value={city}
+                      disabled={!state}
+                      onChange={(e) => setCity(e.target.value)}
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-black focus:border-black transition-all outline-none disabled:opacity-60"
+                    >
+                      <option value="">{state ? 'Select city...' : 'Choose a state first'}</option>
+                      {getCitiesForState(state).map((name) => (
+                        <option key={name} value={name}>
+                          {name}
+                        </option>
+                      ))}
+                    </select>
+                    {fieldError('city')}
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
@@ -390,7 +498,7 @@ export const AdvertisePage: React.FC<AdvertisePageProps> = ({ onBackToHome }) =>
                 onChange={(e) => setMessage(e.target.value)}
                 rows={3}
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-black focus:border-black transition-all outline-none"
-                placeholder="Campaign goals, preferred start date, target cities…"
+                placeholder="Campaign goals, preferred start date…"
               />
               {fieldError('message')}
             </div>
