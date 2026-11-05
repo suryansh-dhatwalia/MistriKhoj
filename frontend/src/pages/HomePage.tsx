@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HeroSection } from '../components/HeroSection';
 import { AdBannerSection } from '../components/AdBannerSection';
+import { VideosSection } from '../components/VideosSection';
 import { MistriNewsStrip } from '../components/MistriNewsStrip';
 import { PopularCategories } from '../components/PopularCategories';
 import { HowItWorks } from '../components/HowItWorks';
@@ -71,6 +72,7 @@ export const HomePage: React.FC = () => {
       />
       <MistriNewsStrip />
       <AdBannerSection onAdvertiseClick={() => navigate('/advertise')} />
+      <VideosSection />
       <PopularCategories onSelectCategory={(category) => navigate(buildResultsPath({ category: slugify(category) }))} />
       <HowItWorks onRegisterClick={() => navigate('/register')} />
       <TrustAndSafety />

@@ -52,6 +52,8 @@ export interface Technician {
   state: SupportedState;
   city: string;
   category: string;
+  /** Other trades the Mistri also works in, besides the primary `category`. */
+  extraCategories?: string[];
   qualification: string;
   address: string;
   experienceYears: number;
@@ -91,6 +93,7 @@ export interface MistriRegistrationFormData {
   state: SupportedState | '';
   city: string;
   category: string;
+  extraCategories: string[];
   fullName: string;
   primaryPhone: string;
   alternatePhone: string;
@@ -139,6 +142,7 @@ export interface RegistrationApiResponse {
     id: number;
     profilePhotoUrl: string;
     galleryImages: RegistrationGalleryImage[] | null;
+    extraCategories?: string[];
     createdAt: string;
   };
 }
@@ -154,6 +158,7 @@ export interface MistriListItem {
   state: string;
   city: string;
   category: string;
+  extraCategories?: string[];
   fullName: string;
   primaryPhone: string;
   alternatePhone: string | null;

@@ -13,6 +13,7 @@ import {
   IconButton,
   CircularProgress,
   Alert,
+  Autocomplete,
   MenuItem,
   useMediaQuery,
   useTheme,
@@ -22,6 +23,10 @@ import AddIcon from '@mui/icons-material/Add';
 import SaveIcon from '@mui/icons-material/Save';
 import { Mistri, MistriPlan, UpdateMistriInput } from '../../types/mistri.types';
 import { mistrisApi } from '../../api/mistris.api';
+import { loadCategoryNameOptions } from '../../api/optionLoaders';
+
+/** Mirrors MAX_EXTRA_CATEGORIES in backend/src/lib/mistri-category-rules.ts. */
+const MAX_EXTRA_CATEGORIES = 4;
 import { parseApiError } from '../../utils/error.utils';
 import { brandColors } from '../../theme/theme';
 
@@ -47,6 +52,7 @@ export const MistriEditDialog: React.FC<MistriEditDialogProps> = ({
     state: '',
     city: '',
     category: '',
+    extraCategories: [],
     qualification: '',
     address: '',
     pincode: '',
@@ -60,6 +66,40 @@ export const MistriEditDialog: React.FC<MistriEditDialogProps> = ({
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [categoryOptions, setCategoryOptions] = useState<string[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState<boolean>(false);
+  const [categoriesError, setCategoriesError] = useState<string | null>(null);
+
+  // Load every category from Masters → Categories each time the dialog opens.
+  useEffect(() => {
+    if (!open) return;
+    let active = true;
+    setCategoriesLoading(true);
+    setCategoriesError(null);
+    loadCategoryNameOptions()
+      .then((options) => {
+        if (active) setCategoryOptions(options.map((option) => String(option.value)));
+      })
+      .catch((error) => {
+        if (active) setCategoriesError(parseApiError(error).message);
+      })
+      .finally(() => {
+        if (active) setCategoriesLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [open]);
+
+  // Older registrations may hold a category that is no longer in the list; keep it selectable.
+  const currentCategory = formData.category.trim();
+  const isLegacyCategory = Boolean(currentCategory) && !categoryOptions.includes(currentCategory);
+  const categorySelectOptions = isLegacyCategory ? [currentCategory, ...categoryOptions] : categoryOptions;
+  const extraCategories = formData.extraCategories ?? [];
+  // Extra trades: any master category except the primary one (plus any saved value no longer listed).
+  const extraCategorySelectOptions = Array.from(
+    new Set([...extraCategories, ...categoryOptions]),
+  ).filter((name) => name !== currentCategory);
 
   useEffect(() => {
     if (mistri) {
@@ -70,6 +110,7 @@ export const MistriEditDialog: React.FC<MistriEditDialogProps> = ({
         state: mistri.state || '',
         city: mistri.city || '',
         category: mistri.category || '',
+        extraCategories: Array.isArray(mistri.extraCategories) ? [...mistri.extraCategories] : [],
         qualification: mistri.qualification || '',
         address: mistri.address || '',
         pincode: mistri.pincode || '',
@@ -247,14 +288,66 @@ export const MistriEditDialog: React.FC<MistriEditDialogProps> = ({
 
             {/* Category */}
             <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
+              <Autocomplete
                 fullWidth
-                required
-                label="Category / Trade"
-                value={formData.category}
-                onChange={(e) => handleInputChange('category', e.target.value)}
-                error={Boolean(fieldErrors.category)}
-                helperText={fieldErrors.category}
+                options={categorySelectOptions}
+                value={formData.category || null}
+                onChange={(_event, value) => {
+                  const next = value ?? '';
+                  handleInputChange('category', next);
+                  // The primary trade cannot also be an extra one.
+                  handleInputChange(
+                    'extraCategories',
+                    extraCategories.filter((name) => name !== next),
+                  );
+                }}
+                loading={categoriesLoading}
+                noOptionsText={categoriesError ? 'Could not load categories' : 'No matching category'}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    required
+                    label="Category / Trade"
+                    placeholder="Search categories"
+                    error={Boolean(fieldErrors.category || categoriesError)}
+                    helperText={
+                      fieldErrors.category ||
+                      categoriesError ||
+                      (isLegacyCategory && !categoriesLoading
+                        ? 'This category is not in Masters → Categories. Pick one from the list.'
+                        : undefined)
+                    }
+                  />
+                )}
+              />
+            </Grid>
+
+            {/* Extra categories */}
+            <Grid size={{ xs: 12 }}>
+              <Autocomplete
+                multiple
+                fullWidth
+                options={extraCategorySelectOptions}
+                value={extraCategories}
+                onChange={(_event, value) => handleInputChange('extraCategories', value.slice(0, MAX_EXTRA_CATEGORIES))}
+                getOptionDisabled={(option) =>
+                  extraCategories.length >= MAX_EXTRA_CATEGORIES && !extraCategories.includes(option)
+                }
+                loading={categoriesLoading}
+                filterSelectedOptions
+                noOptionsText={categoriesError ? 'Could not load categories' : 'No matching category'}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Also works in (optional)"
+                    placeholder={extraCategories.length >= MAX_EXTRA_CATEGORIES ? '' : 'Add another trade'}
+                    error={Boolean(fieldErrors.extraCategories)}
+                    helperText={
+                      fieldErrors.extraCategories ||
+                      `Up to ${MAX_EXTRA_CATEGORIES} extra trades (${extraCategories.length}/${MAX_EXTRA_CATEGORIES}). The Mistri also appears in these category searches; the paid top listing stays on the main category.`
+                    }
+                  />
+                )}
               />
             </Grid>
 

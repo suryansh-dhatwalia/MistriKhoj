@@ -1,6 +1,8 @@
 import type { NextFunction, Request, Response } from "express";
 import { getPaidPlanPriceInr } from "../config/subscription.js";
 import { prisma } from "../lib/prisma.js";
+import { slugify } from "../lib/location.js";
+import { normalizeExtraCategories, replaceExtraCategories } from "../lib/mistri-categories.js";
 import { mistriRatingSchema, mistriRegistrationSchema, paidSlotQuerySchema } from "../schemas/mistri.schema.js";
 import { idParamSchema } from "../schemas/shared.js";
 import { publicMistriQuerySchema } from "../schemas/directory.schema.js";
@@ -174,14 +176,24 @@ export async function registerMistri(
 
     const selectionErrors: Record<string, string[]> = {};
 
+    const extraCategories = normalizeExtraCategories(input.category, input.extraCategories);
+
     if (activeCategoryCount > 0) {
-      const category = await prisma.category.findFirst({
-        where: { name: input.category, status: "ACTIVE" },
-        select: { id: true },
+      const requested = [input.category, ...extraCategories];
+      const found = await prisma.category.findMany({
+        where: { name: { in: requested }, status: "ACTIVE" },
+        select: { name: true },
       });
-      if (!category) {
+      const available = new Set(found.map((row) => slugify(row.name)));
+      if (!available.has(slugify(input.category))) {
         selectionErrors.category = [
           "This service category is no longer available. Please pick another.",
+        ];
+      }
+      const missingExtras = extraCategories.filter((name) => !available.has(slugify(name)));
+      if (missingExtras.length > 0) {
+        selectionErrors.extraCategories = [
+          `No longer available: ${missingExtras.join(", ")}. Please remove ${missingExtras.length === 1 ? "it" : "them"}.`,
         ];
       }
     }
@@ -273,6 +285,8 @@ export async function registerMistri(
         },
       });
 
+      await replaceExtraCategories(tx, created.id, extraCategories);
+
       await tx.mistriSubscription.create({
         data: {
           mistriId: created.id,
@@ -290,7 +304,7 @@ export async function registerMistri(
     response.status(201).json({
       success: true,
       message: "Mistri registration completed successfully.",
-      data: { ...mistri, plan: input.subscriptionPlan },
+      data: { ...mistri, extraCategories, plan: input.subscriptionPlan },
     });
   } catch (error) {
     await removeStoredImages(uploadedPublicIds);

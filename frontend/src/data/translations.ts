@@ -106,7 +106,9 @@ export type TranslationKey =
   | 'footer_desc'
   | 'footer_states_title'
   | 'footer_crafts_title'
-  | 'footer_safety_title';
+  | 'footer_safety_title'
+  | 'home_videos_title'
+  | 'home_videos_subtitle';
 
 export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, string>> = {
   hi: {
@@ -204,6 +206,8 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     footer_states_title: 'सपोर्टेड {count} राज्य',
     footer_crafts_title: 'प्रमुख शिल्प श्रेणियां',
     footer_safety_title: 'सुरक्षा एवं मानक',
+    home_videos_title: 'मिस्त्रीखोज वीडियो',
+    home_videos_subtitle: 'देखिए मिस्त्रीखोज कैसे ग्राहकों और मिस्त्रियों को सीधे जोड़ता है।',
   },
   en: {
     nav_brand_subtitle: 'DIRECT VERIFIED DIRECTORY',
@@ -300,6 +304,8 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     footer_states_title: 'Supported {count} States',
     footer_crafts_title: 'Craft Categories',
     footer_safety_title: 'Safety & Verification',
+    home_videos_title: 'MistriKhoj Videos',
+    home_videos_subtitle: 'See how MistriKhoj connects customers directly with trusted local Mistris.',
   },
   bn: {
     nav_brand_subtitle: 'প্রত্যক্ষ যাচাইকৃত ডিরেক্টরি',
@@ -396,6 +402,8 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     footer_states_title: 'সাপোর্টেড {count}টি রাজ্য',
     footer_crafts_title: 'কাজের বিভাগ',
     footer_safety_title: 'নিরাপত্তা ও যাচাই',
+    home_videos_title: 'মিস্ত্রিখোঁজ ভিডিও',
+    home_videos_subtitle: 'দেখুন মিস্ত্রিখোঁজ কীভাবে গ্রাহক ও মিস্ত্রিদের সরাসরি যুক্ত করে।',
   },
   mr: {
     nav_brand_subtitle: 'थेट सत्यापित डिरेक्टरी',
@@ -492,6 +500,8 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     footer_states_title: '{count} राज्ये',
     footer_crafts_title: 'कामाच्या श्रेण्या',
     footer_safety_title: 'सुरक्षा व मानके',
+    home_videos_title: 'मिस्त्रीखोज व्हिडिओ',
+    home_videos_subtitle: 'मिस्त्रीखोज ग्राहक आणि मिस्त्रींना थेट कसे जोडते ते पहा.',
   },
   as: {
     nav_brand_subtitle: 'প্ৰত্যক্ষ প্ৰমাণিত নিৰ্দেশিকা',
@@ -588,6 +598,8 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     footer_states_title: '{count}খন ৰাজ্য',
     footer_crafts_title: 'সেৱা শ্ৰেণী',
     footer_safety_title: 'সুৰক্ষা আৰু মান',
+    home_videos_title: 'মিস্ত্ৰীখোজ ভিডিঅ\'',
+    home_videos_subtitle: 'চাওক মিস্ত্ৰীখোজে কেনেকৈ গ্ৰাহক আৰু মিস্ত্ৰীক পোনপটীয়াকৈ সংযোগ কৰে।',
   },
   gu: {
     nav_brand_subtitle: 'પ્રત્યક્ષ ચકાસાયેલ ડિરેક્ટરી',
@@ -684,6 +696,8 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     footer_states_title: 'સપોર્ટેડ {count} રાજ્યો',
     footer_crafts_title: 'સેવા શ્રેણીઓ',
     footer_safety_title: 'સુરક્ષા અને ધોરણો',
+    home_videos_title: 'મિસ્ત્રીખોજ વિડિયો',
+    home_videos_subtitle: 'જુઓ મિસ્ત્રીખોજ ગ્રાહકો અને મિસ્ત્રીઓને સીધા કેવી રીતે જોડે છે.',
   },
   ta: {
     nav_brand_subtitle: 'நேரடி சரிபார்க்கப்பட்ட அடைவு',
@@ -780,6 +794,8 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     footer_states_title: '{count} மாநிலங்கள்',
     footer_crafts_title: 'சேவைப் பிரிவுகள்',
     footer_safety_title: 'பாதுகாப்பு & தரம்',
+    home_videos_title: 'மிஸ்திரிகோஜ் வீடியோக்கள்',
+    home_videos_subtitle: 'மிஸ்திரிகோஜ் வாடிக்கையாளர்களையும் மிஸ்திரிகளையும் நேரடியாக எப்படி இணைக்கிறது என்று பாருங்கள்.',
   },
   te: {
     nav_brand_subtitle: 'ప్రత్యక్ష ధృవీకరించబడిన డైరెక్టరీ',
@@ -876,6 +892,8 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     footer_states_title: '{count} రాష్ట్రాలు',
     footer_crafts_title: 'సేవా వర్గాలు',
     footer_safety_title: 'భద్రత & ప్రమాణాలు',
+    home_videos_title: 'మిస్త్రీఖోజ్ వీడియోలు',
+    home_videos_subtitle: 'మిస్త్రీఖోజ్ కస్టమర్లను మరియు మిస్త్రీలను నేరుగా ఎలా కలుపుతుందో చూడండి.',
   },
   kn: {
     nav_brand_subtitle: 'ನೇರ ಪರಿಶೀಲಿಸಿದ ಡೈರೆಕ್ಟರಿ',
@@ -972,5 +990,7 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<TranslationKey, stri
     footer_states_title: '{count} ರಾಜ್ಯಗಳು',
     footer_crafts_title: 'ಸೇವಾ ವರ್ಗಗಳು',
     footer_safety_title: 'ಸುರಕ್ಷತೆ & ಮಾನದಂಡಗಳು',
+    home_videos_title: 'ಮಿಸ್ತ್ರಿಖೋಜ್ ವೀಡಿಯೊಗಳು',
+    home_videos_subtitle: 'ಮಿಸ್ತ್ರಿಖೋಜ್ ಗ್ರಾಹಕರು ಮತ್ತು ಮಿಸ್ತ್ರಿಗಳನ್ನು ನೇರವಾಗಿ ಹೇಗೆ ಜೋಡಿಸುತ್ತದೆ ಎಂದು ನೋಡಿ.',
   },
 };

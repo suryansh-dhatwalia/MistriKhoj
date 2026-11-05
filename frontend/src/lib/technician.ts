@@ -10,6 +10,7 @@ export const toTechnician = (mistri: MistriListItem): Technician => ({
   state: mistri.state as SupportedState,
   city: mistri.city,
   category: mistri.category,
+  extraCategories: mistri.extraCategories ?? [],
   qualification: mistri.qualification,
   address: `${mistri.address}${mistri.pincode ? `, PIN - ${mistri.pincode}` : ''}`,
   experienceYears: mistri.experienceYears,
@@ -31,6 +32,12 @@ export const toTechnician = (mistri: MistriListItem): Technician => ({
   isFeatured: Boolean(mistri.isFeatured),
   featuredUntil: mistri.featuredUntil ?? null,
 });
+
+/** "Electrician" or "Electrician · also Plumber, AC Repair" for cards and the profile page. */
+export function categoryLine(tech: Pick<Technician, 'category' | 'extraCategories'>): string {
+  const extras = tech.extraCategories ?? [];
+  return extras.length > 0 ? `${tech.category} · also ${extras.join(', ')}` : tech.category;
+}
 
 /** "MST-000123" -> 123 (the raw id the API expects). */
 export const toMistriNumericId = (formattedId: string): number => Number(formattedId.replace(/^MST-/, ''));

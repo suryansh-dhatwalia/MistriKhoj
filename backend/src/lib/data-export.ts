@@ -25,12 +25,17 @@ const joinList = (value: unknown): string =>
 
 /** Builds one workbook with every Mistri, subscription, ad and ad-request row. */
 export async function buildDataWorkbook(): Promise<ExcelJS.Workbook> {
-  const [mistris, subscriptions, advertisements, adRequests] = await Promise.all([
+  const [mistris, subscriptions, advertisements, adRequests, extraCategoryRows] = await Promise.all([
     prisma.mistri.findMany({ orderBy: { id: "asc" } }),
     prisma.mistriSubscription.findMany(),
     prisma.advertisement.findMany({ orderBy: { id: "asc" } }),
     prisma.adRequest.findMany({ orderBy: { id: "asc" } }),
+    prisma.mistriExtraCategory.findMany({ orderBy: { id: "asc" } }),
   ]);
+  const extraCategoriesByMistri = new Map<number, string[]>();
+  for (const row of extraCategoryRows) {
+    extraCategoriesByMistri.set(row.mistriId, [...(extraCategoriesByMistri.get(row.mistriId) ?? []), row.category]);
+  }
   const subscriptionByMistri = new Map(subscriptions.map((sub) => [sub.mistriId, sub]));
 
   const workbook = new ExcelJS.Workbook();
@@ -48,6 +53,7 @@ export async function buildDataWorkbook(): Promise<ExcelJS.Workbook> {
       { header: "State", key: "state" },
       { header: "City", key: "city" },
       { header: "Category", key: "category" },
+      { header: "Extra categories", key: "extraCategories", width: 30 },
       { header: "Status", key: "status", width: 12 },
       { header: "Plan", key: "plan", width: 10 },
       { header: "Plan price (INR)", key: "priceInr", width: 16 },
@@ -69,6 +75,7 @@ export async function buildDataWorkbook(): Promise<ExcelJS.Workbook> {
       return {
         ...mistri,
         servicesOffered: joinList(mistri.servicesOffered),
+        extraCategories: (extraCategoriesByMistri.get(mistri.id) ?? []).join(", "),
         plan: sub?.plan ?? "FREE",
         priceInr: sub?.priceInr ?? 0,
         startsAt: sub?.startsAt ?? null,

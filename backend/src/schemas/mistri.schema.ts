@@ -8,6 +8,7 @@ import {
   optionalText,
   phoneSchema,
 } from "./shared.js";
+import { MAX_EXTRA_CATEGORIES } from "../lib/mistri-category-rules.js";
 
 const optionalPincodeSchema = z.preprocess(
   (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
@@ -18,6 +19,11 @@ export const mistriRegistrationSchema = z.object({
   state: z.string().trim().min(2).max(100),
   city: citySchema,
   category: z.string().trim().min(2).max(120),
+  // Optional extra trades on top of the primary category (see lib/mistri-categories.ts).
+  extraCategories: z
+    .array(z.string().trim().min(2).max(120))
+    .max(MAX_EXTRA_CATEGORIES, `Pick at most ${MAX_EXTRA_CATEGORIES} extra categories`)
+    .default([]),
   fullName: z.string().trim().min(2).max(120),
   primaryPhone: phoneSchema,
   alternatePhone: optionalPhoneSchema,

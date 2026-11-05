@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Award, ChevronRight, MapPin, MessageSquare, Phone, ShieldCheck, Star } from 'lucide-react';
 import type { Technician } from '../types';
 import { DEFAULT_AVATAR_URI } from '../lib/avatar';
-import { toMistriNumericId } from '../lib/technician';
+import { categoryLine, toMistriNumericId } from '../lib/technician';
 import { useLanguage } from '../context/LanguageContext';
 
 interface MistriCardProps {
@@ -65,7 +65,7 @@ export const MistriCard: React.FC<MistriCardProps> = ({ tech, onDirectContact })
                 {tech.name}
               </Link>
             </h3>
-            <p className="text-xs font-bold text-gray-600">{tech.category}</p>
+            <p className="line-clamp-2 text-xs font-bold text-gray-600">{categoryLine(tech)}</p>
             <div className="mt-0.5 flex items-center gap-1 text-[11px] font-medium text-gray-500">
               <MapPin className="h-3 w-3 shrink-0 text-black" aria-hidden="true" />
               <span className="truncate">

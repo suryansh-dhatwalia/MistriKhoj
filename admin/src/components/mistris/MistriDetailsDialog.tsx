@@ -140,6 +140,11 @@ export const MistriDetailsDialog: React.FC<MistriDetailsDialogProps> = ({
               <Typography variant="subtitle1" sx={{ color: brandColors.textSecondary, fontWeight: 600 }}>
                 {mistri.category}
               </Typography>
+              {mistri.extraCategories && mistri.extraCategories.length > 0 && (
+                <Typography variant="body2" sx={{ color: brandColors.textSecondary }}>
+                  Also works in: {mistri.extraCategories.join(', ')}
+                </Typography>
+              )}
 
               <Box
                 sx={{

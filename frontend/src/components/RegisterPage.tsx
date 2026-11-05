@@ -32,6 +32,10 @@ import { DEFAULT_AVATAR_URI, avatarOrDefault } from '../lib/avatar';
 import { useLanguage } from '../context/LanguageContext';
 import { useContent } from '../context/ContentContext';
 import { INDIA_STATES } from '../data/indiaStates';
+import { categoryLine } from '../lib/technician';
+
+/** Mirrors MAX_EXTRA_CATEGORIES in backend/src/lib/mistri-category-rules.ts. */
+const MAX_EXTRA_CATEGORIES = 4;
 
 const formatSlotDate = (iso: string): string => {
   const date = new Date(iso);
@@ -81,6 +85,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
     state: '',
     city: '',
     category: 'Electrician',
+    extraCategories: [],
     fullName: '',
     primaryPhone: '',
     alternatePhone: '',
@@ -108,6 +113,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [registeredMistri, setRegisteredMistri] = useState<Technician | null>(null);
   const [paidSlot, setPaidSlot] = useState<PaidSlotStatusResponse | null>(null);
+  const [extraCategorySearch, setExtraCategorySearch] = useState('');
   const [isCheckingPaidSlot, setIsCheckingPaidSlot] = useState(false);
 
   const availableCities = formData.state ? getCitiesForState(formData.state) : [];
@@ -155,9 +161,49 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
     setFormData(prev => ({
       ...prev,
       category: newCat,
+      // The primary trade cannot also be listed as an extra one.
+      extraCategories: prev.extraCategories.filter(c => c !== newCat),
       servicesOffered: suggested
     }));
   };
+
+  const toggleExtraCategory = (name: string) => {
+    setFormData(prev => {
+      const selected = prev.extraCategories.includes(name);
+      if (!selected && prev.extraCategories.length >= MAX_EXTRA_CATEGORIES) return prev;
+      return {
+        ...prev,
+        extraCategories: selected
+          ? prev.extraCategories.filter(c => c !== name)
+          : [...prev.extraCategories, name]
+      };
+    });
+    if (errors.extraCategories) {
+      setErrors(prev => {
+        const next = { ...prev };
+        delete next.extraCategories;
+        return next;
+      });
+    }
+  };
+
+  const extraCategoryNeedle = extraCategorySearch.trim().toLowerCase();
+  const extraCategoryChoices = SERVICE_CATEGORIES.filter(
+    c =>
+      c.name !== formData.category &&
+      (!extraCategoryNeedle ||
+        c.name.toLowerCase().includes(extraCategoryNeedle) ||
+        (c.hindiName ?? '').toLowerCase().includes(extraCategoryNeedle))
+  );
+
+  // Service suggestions come from the primary trade plus every extra trade, without repeats.
+  const suggestedServices = Array.from(
+    new Set(
+      [formData.category, ...formData.extraCategories].flatMap(
+        name => SERVICE_CATEGORIES.find(c => c.name === name)?.popularServices ?? []
+      )
+    )
+  );
 
   const toggleServiceOffer = (service: string) => {
     setFormData(prev => {
@@ -323,6 +369,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
         state: formData.state as SupportedState,
         city: formData.city,
         category: formData.category,
+        extraCategories: savedMistri.extraCategories ?? formData.extraCategories,
         qualification: formData.qualification,
         address: formData.address + (formData.pincode ? `, Pin - ${formData.pincode}` : ''),
         experienceYears: formData.experienceYears,
@@ -460,7 +507,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                     {registeredMistri.name}
                   </div>
                   <div className="text-xs font-bold text-[#FFB800]">
-                    {registeredMistri.category}
+                    {categoryLine(registeredMistri)}
                   </div>
                   <div className="text-[11px] text-gray-300 flex items-center gap-1 mt-1 font-medium">
                     <MapPin className="w-3 h-3 text-[#FFB800]" />
@@ -626,6 +673,85 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                     ))}
                   </select>
                 </div>
+              </div>
+
+              {/* Extra categories (optional, multi-select) */}
+              <div className="rounded-xl border border-gray-200 bg-gray-50/60 p-3.5">
+                <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
+                  <label htmlFor="register-extra-category-search" className="text-xs font-bold text-gray-700">
+                    Also work in other trades? <span className="font-medium text-gray-500">(optional)</span>
+                  </label>
+                  <span className="text-[11px] font-bold text-gray-500" aria-live="polite">
+                    {formData.extraCategories.length}/{MAX_EXTRA_CATEGORIES} selected
+                  </span>
+                </div>
+                <p className="mb-2.5 text-[11px] font-medium text-gray-500">
+                  Customers searching these trades will also find you. Your main trade above stays your headline
+                  {formData.subscriptionPlan === 'PAID' ? ' and is the trade your Paid top listing applies to' : ''}.
+                </p>
+
+                {formData.extraCategories.length > 0 && (
+                  <div className="mb-2.5 flex flex-wrap gap-2">
+                    {formData.extraCategories.map((name) => (
+                      <button
+                        key={name}
+                        type="button"
+                        onClick={() => toggleExtraCategory(name)}
+                        className="flex items-center gap-1.5 rounded-xl border-2 border-black bg-black px-3 py-1.5 text-xs font-bold text-[#FFB800]"
+                        aria-label={`Remove ${name}`}
+                      >
+                        <span>{name}</span>
+                        <X className="h-3.5 w-3.5 stroke-[3]" aria-hidden="true" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                <input
+                  id="register-extra-category-search"
+                  type="search"
+                  value={extraCategorySearch}
+                  onChange={(e) => setExtraCategorySearch(e.target.value)}
+                  placeholder="Search trades, e.g. Plumber, AC Repair..."
+                  className="mb-2.5 w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-xs font-medium text-gray-900 focus:border-black focus:outline-none"
+                />
+
+                <div
+                  className="flex max-h-44 flex-wrap gap-2 overflow-y-auto pr-1"
+                  role="group"
+                  aria-label="Extra trade categories"
+                >
+                  {extraCategoryChoices.map((cat) => {
+                    const isSelected = formData.extraCategories.includes(cat.name);
+                    const isDisabled = !isSelected && formData.extraCategories.length >= MAX_EXTRA_CATEGORIES;
+                    return (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => toggleExtraCategory(cat.name)}
+                        disabled={isDisabled}
+                        aria-pressed={isSelected}
+                        className={`flex items-center gap-1.5 rounded-xl border-2 px-3 py-1.5 text-xs font-bold transition-all ${
+                          isSelected
+                            ? 'border-black bg-black text-[#FFB800]'
+                            : isDisabled
+                              ? 'cursor-not-allowed border-gray-200 bg-white text-gray-400'
+                              : 'border-gray-200 bg-white text-gray-800 hover:border-black'
+                        }`}
+                      >
+                        {isSelected && <Check className="h-3.5 w-3.5 stroke-[3] text-[#FFB800]" aria-hidden="true" />}
+                        <span>{cat.name}</span>
+                      </button>
+                    );
+                  })}
+                  {extraCategoryChoices.length === 0 && (
+                    <p className="text-[11px] font-medium text-gray-500">No trade matches "{extraCategorySearch}".</p>
+                  )}
+                </div>
+
+                {errors.extraCategories && (
+                  <p className="mt-2 text-[11px] font-bold text-red-600">{errors.extraCategories}</p>
+                )}
               </div>
             </div>
 
@@ -810,7 +936,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                 </label>
                 
                 <div className="flex flex-wrap gap-2 mb-3">
-                  {SERVICE_CATEGORIES.find(c => c.name === formData.category)?.popularServices.map((srv) => {
+                  {suggestedServices.map((srv) => {
                     const isSelected = formData.servicesOffered.includes(srv);
                     return (
                       <button

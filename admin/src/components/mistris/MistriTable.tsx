@@ -176,6 +176,15 @@ export const MistriTable: React.FC<MistriTableProps> = ({
                   >
                     {mistri.category}
                   </Box>
+                  {mistri.extraCategories && mistri.extraCategories.length > 0 && (
+                    <Box
+                      component="span"
+                      title={`Also: ${mistri.extraCategories.join(', ')}`}
+                      sx={{ ml: 0.75, fontSize: '0.72rem', fontWeight: 700, color: '#6B7280', whiteSpace: 'nowrap' }}
+                    >
+                      +{mistri.extraCategories.length} more
+                    </Box>
+                  )}
                 </TableCell>
 
                 <TableCell>

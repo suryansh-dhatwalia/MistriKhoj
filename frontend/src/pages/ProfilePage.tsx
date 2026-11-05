@@ -21,7 +21,7 @@ import { DEFAULT_AVATAR_URI } from '../lib/avatar';
 import { apiErrorMessage, fetchMistriProfile } from '../lib/mistri.api';
 import { buildResultsPath } from '../lib/searchParams';
 import { usePageMeta } from '../lib/seo';
-import { contactTechnician, toTechnician } from '../lib/technician';
+import { categoryLine, contactTechnician, toTechnician } from '../lib/technician';
 import type { Technician } from '../types';
 
 type LoadState =
@@ -152,7 +152,7 @@ export const ProfilePage: React.FC = () => {
               <div className="min-w-0 flex-1">
                 <span className="rounded-full border border-[#EAE3D6] bg-white px-2.5 py-0.5 text-xs font-semibold">{tech!.badgeLevel}</span>
                 <h1 className="font-display mt-1.5 text-2xl font-normal sm:text-3xl">{tech!.name}</h1>
-                <p className="text-xs font-semibold text-[#161616]/70">{tech!.category}</p>
+                <p className="text-xs font-semibold text-[#161616]/70">{categoryLine(tech!)}</p>
                 <div className="mt-1 flex items-center gap-1 text-xs text-[#161616]/65">
                   <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                   <span>{tech!.city}, {tech!.state}</span>

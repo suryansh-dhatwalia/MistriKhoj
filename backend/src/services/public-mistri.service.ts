@@ -2,6 +2,7 @@ import type { Prisma } from "../../generated/prisma/client.js";
 import { prisma } from "../lib/prisma.js";
 import { sameLocation, slugify } from "../lib/location.js";
 import { shuffleRank } from "../lib/shuffle.js";
+import { loadExtraCategories } from "../lib/mistri-categories.js";
 import type { PublicMistriQuery } from "../schemas/directory.schema.js";
 
 export function toStringArray(value: unknown): string[] {
@@ -98,7 +99,7 @@ async function enrich(mistris: PublicMistriRow[]) {
   const ids = mistris.map((mistri) => mistri.id);
   const now = Date.now();
 
-  const [paidSubscriptions, ratingAggregates] = await Promise.all([
+  const [paidSubscriptions, ratingAggregates, extraCategories] = await Promise.all([
     prisma.mistriSubscription.findMany({
       where: { mistriId: { in: ids }, plan: "PAID" },
       select: { mistriId: true, expiresAt: true },
@@ -109,6 +110,7 @@ async function enrich(mistris: PublicMistriRow[]) {
       _avg: { rating: true },
       _count: { rating: true },
     }),
+    loadExtraCategories(ids),
   ]);
 
   const featuredUntilByMistriId = new Map<number, Date>();
@@ -127,6 +129,7 @@ async function enrich(mistris: PublicMistriRow[]) {
     return {
       ...mistri,
       servicesOffered: toStringArray(mistri.servicesOffered),
+      extraCategories: extraCategories.get(mistri.id) ?? [],
       galleryImages: toGalleryUrls(mistri.galleryImages),
       plan: featuredUntil ? ("PAID" as const) : ("FREE" as const),
       isFeatured: featuredUntil != null,
@@ -147,6 +150,7 @@ function matchesQuery(mistri: PublicMistri, query: string): boolean {
     mistri.city,
     mistri.state,
     mistri.category,
+    ...mistri.extraCategories,
     mistri.qualification,
     mistri.shortIntro,
     ...mistri.servicesOffered,
@@ -223,6 +227,7 @@ export async function queryPublicMistris(query: PublicMistriQuery): Promise<Publ
     list = list.filter(
       (mistri) =>
         sameLocation(mistri.category, query.category) ||
+        mistri.extraCategories.some((extra) => sameLocation(extra, query.category)) ||
         mistri.servicesOffered.some((service) => sameLocation(service, query.category)),
     );
   }
@@ -231,8 +236,14 @@ export async function queryPublicMistris(query: PublicMistriQuery): Promise<Publ
     list = list.filter((mistri) => matchesQuery(mistri, needle));
   }
 
+  // The paid top slot belongs to a Mistri's primary category. When browsing a category,
+  // only that category's slot holder is pinned; Mistris listed there through an extra
+  // category stay in the normal order so they never push the slot holder down.
+  const pinned = (mistri: PublicMistri) =>
+    mistri.isFeatured && (!query.category || sameLocation(mistri.category, query.category));
+
   list.sort((a, b) => {
-    if (a.isFeatured !== b.isFeatured) return a.isFeatured ? -1 : 1;
+    if (pinned(a) !== pinned(b)) return pinned(a) ? -1 : 1;
     if (query.sort === "rating") return b.avgRating - a.avgRating || b.ratingsCount - a.ratingsCount;
     if (query.sort === "experience") return b.experienceYears - a.experienceYears;
     if (query.sort === "random") {

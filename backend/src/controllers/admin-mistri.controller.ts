@@ -1,4 +1,10 @@
 import type { NextFunction, Request, Response } from "express";
+import {
+  loadExtraCategories,
+  mistriIdsWithExtraCategory,
+  normalizeExtraCategories,
+  replaceExtraCategories,
+} from "../lib/mistri-categories.js";
 import { Prisma } from "../../generated/prisma/client.js";
 import { getPaidPlanPriceInr, paidPlanExpiryFrom } from "../config/subscription.js";
 import { prisma } from "../lib/prisma.js";
@@ -249,12 +255,17 @@ export async function listAdminMistris(
       planMistriIds = planRows.map((row) => row.mistriId);
     }
 
+    // A category filter matches the primary category or any extra category.
+    const extraCategoryIds = input.category ? await mistriIdsWithExtraCategory(input.category) : undefined;
+
     const where: Prisma.MistriWhereInput = {
       status: input.status,
       ...(planMistriIds ? { id: { in: planMistriIds } } : {}),
       ...(input.state ? { state: input.state } : {}),
       ...(input.city ? { city: { contains: input.city } } : {}),
-      ...(input.category ? { category: input.category } : {}),
+      ...(extraCategoryIds
+        ? { AND: [{ OR: [{ category: input.category }, { id: { in: extraCategoryIds } }] }] }
+        : {}),
       ...(input.search
         ? {
             OR: [
@@ -311,11 +322,13 @@ export async function listAdminMistris(
     }
 
     const info = await subscriptionInfoByMistriId(items.map((item) => item.id));
+    const extras = await loadExtraCategories(items.map((item) => item.id));
 
     response.status(200).json({
       success: true,
       data: items.map((item) => ({
         ...withSubscription(presentMistri(item), info),
+        extraCategories: extras.get(item.id) ?? [],
         viewCount: viewTotals.get(item.id) ?? 0,
       })),
       total,
@@ -347,9 +360,14 @@ export async function getAdminMistri(
     }
     const info = await subscriptionInfoByMistriId([id]);
     const views = await profileViewTotals([id]);
+    const extras = await loadExtraCategories([id]);
     response.status(200).json({
       success: true,
-      data: { ...withSubscription(presentMistri(mistri), info), viewCount: views.get(id) ?? 0 },
+      data: {
+        ...withSubscription(presentMistri(mistri), info),
+        extraCategories: extras.get(id) ?? [],
+        viewCount: views.get(id) ?? 0,
+      },
     });
   } catch (error) {
     next(error);
@@ -377,7 +395,7 @@ export async function updateAdminMistri(
     return;
   }
 
-  const { plan, ...mistriData } = validation.data;
+  const { plan, extraCategories, ...mistriData } = validation.data;
 
   try {
     const admin = response.locals.admin as SafeAdmin;
@@ -396,6 +414,15 @@ export async function updateAdminMistri(
       });
 
       const sub = await ensureSubscription(tx, updated);
+
+      if (extraCategories !== undefined) {
+        await replaceExtraCategories(tx, id, normalizeExtraCategories(updated.category, extraCategories));
+      } else {
+        // The primary category may have changed to one of the extras; drop the duplicate.
+        const current = (await loadExtraCategories([id], tx)).get(id) ?? [];
+        const cleaned = normalizeExtraCategories(updated.category, current);
+        if (cleaned.length !== current.length) await replaceExtraCategories(tx, id, cleaned);
+      }
 
       // Always keep the slot key aligned with the (possibly edited) Mistri.
       const subData: Prisma.MistriSubscriptionUpdateInput = {
@@ -466,7 +493,11 @@ export async function updateAdminMistri(
     });
 
     const info = await subscriptionInfoByMistriId([id]);
-    response.status(200).json({ success: true, data: withSubscription(presentMistri(mistri), info) });
+    const extras = await loadExtraCategories([id]);
+    response.status(200).json({
+      success: true,
+      data: { ...withSubscription(presentMistri(mistri), info), extraCategories: extras.get(id) ?? [] },
+    });
   } catch (error) {
     if (error instanceof PaidSlotTakenError) {
       response.status(409).json({ success: false, message: paidSlotTakenMessage(error) });
@@ -670,6 +701,7 @@ export async function deleteAdminMistri(
       // Free the paid slot (if any) — there is no FK cascade from the Mistri row.
       prisma.mistriSubscription.deleteMany({ where: { mistriId: id } }),
       prisma.mistriAvailability.deleteMany({ where: { mistriId: id } }),
+      prisma.mistriExtraCategory.deleteMany({ where: { mistriId: id } }),
       prisma.mistri.delete({ where: { id } }),
       prisma.adminAuditLog.create({
         data: {

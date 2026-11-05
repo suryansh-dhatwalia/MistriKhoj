@@ -7,6 +7,8 @@ export interface Mistri {
   state: string;
   city: string;
   category: string;
+  /** Other trades the Mistri also works in, besides the primary `category`. */
+  extraCategories?: string[];
   fullName: string;
   primaryPhone: string;
   alternatePhone: string | null;
@@ -61,6 +63,7 @@ export interface UpdateMistriInput {
   state: string;
   city: string;
   category: string;
+  extraCategories?: string[];
   qualification: string;
   address: string;
   pincode?: string | null;

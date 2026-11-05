@@ -495,3 +495,18 @@ model AdRequestTargeting {
 
   @@map("ad_request_targeting")
 }
+
+// Extra trades a Mistri also works in, on top of the primary `Mistri.category`. The
+// primary category stays the paid-slot key and the headline trade; these rows only make
+// the Mistri appear in more category searches. Sidecar table joined in code by
+// `mistriId` (no Prisma `@relation`), so the `Mistri` model itself stays untouched.
+model MistriExtraCategory {
+  id        Int      @id @default(autoincrement())
+  mistriId  Int      @map("mistri_id")
+  category  String   @db.VarChar(120)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([mistriId, category])
+  @@index([category])
+  @@map("mistri_extra_categories")
+}

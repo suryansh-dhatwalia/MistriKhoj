@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { citySchema, optionalPhoneSchema, optionalText, phoneSchema } from "./shared.js";
+import { MAX_EXTRA_CATEGORIES } from "../lib/mistri-category-rules.js";
 
 const optionalPincodeSchema = z.preprocess(
   (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
@@ -60,6 +61,11 @@ export const adminMistriUpdateSchema = z.object({
   state: z.string().trim().min(2).max(100),
   city: citySchema,
   category: z.string().trim().min(2).max(120),
+  // Omit to leave the extra categories unchanged; send [] to clear them.
+  extraCategories: z
+    .array(z.string().trim().min(2).max(120))
+    .max(MAX_EXTRA_CATEGORIES, `Pick at most ${MAX_EXTRA_CATEGORIES} extra categories`)
+    .optional(),
   qualification: z.string().trim().min(2).max(255),
   address: z.string().trim().min(5).max(2_000),
   pincode: optionalPincodeSchema.nullable(),
